@@ -7,9 +7,9 @@
     "dev": "NODE_ENV=development DB_RETRY_ENABLED=false tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start": "NODE_ENV=production DB_RETRY_ENABLED=true node dist/server.js",
-    "engage:migrate": "knex --knexfile src/db/knexfile.engage.cjs migrate:latest",
-    "engage:rollback": "knex --knexfile src/db/knexfile.engage.cjs migrate:rollback",
-    "engage:seed": "knex --knexfile src/db/knexfile.engage.cjs seed:run"
+    "engage:migrate": "NODE_OPTIONS='-r dotenv/config' npx knex --knexfile src/db/knexfile.engage.cjs migrate:latest",
+    "engage:rollback": "NODE_OPTIONS='-r dotenv/config' npx knex --knexfile src/db/knexfile.engage.cjs migrate:rollback",
+    "engage:seed": "NODE_OPTIONS=\"-r dotenv/config\" npx knex --knexfile src/db/knexfile.engage.cjs seed:run"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

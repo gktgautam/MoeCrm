@@ -6,10 +6,10 @@ module.exports = {
     max: Number(process.env.PG_POOL_MAX ?? 5),
   },
   migrations: {
-    directory: "./src/db/migrations/engage",
-    tableName: "knex_migrations_engage"
+    directory: "./engage/migrations",
+    tableName: "knex_migrations_engage",
   },
   seeds: {
-    directory: "./src/db/seeds/engage",
+    directory: "./engage/seeds",
   },
 };

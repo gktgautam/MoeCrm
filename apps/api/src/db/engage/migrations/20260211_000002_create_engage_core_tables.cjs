@@ -1,4 +1,4 @@
-// apps/api/src/db/migrations/engage/20260211_000002_create_engage_core_tables.js
+// apps/api/src/db/engage/migrations/20260211_000002_create_engage_core_tables.js
 
 exports.up = async (knex) => {
   await knex.schema.raw(`

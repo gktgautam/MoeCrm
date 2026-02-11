@@ -1,4 +1,4 @@
-// apps/api/src/db/migrations/engage/20260211_000001_create_app_users.js
+// apps/api/src/db/engage/migrations/20260211_000001_create_app_users.js
 
 exports.up = async (knex) => {
   // 1) enum types (Postgres)
