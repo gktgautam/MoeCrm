@@ -1,9 +1,6 @@
-// src/server.ts
 import "dotenv/config";
 import { buildApp } from "./app.js";
-
-const PORT = Number(process.env.PORT ?? 8080);
-const HOST = process.env.HOST ?? "0.0.0.0";
+import { env } from "./config.env.js";
 
 async function start() {
   const app = await buildApp();
@@ -23,8 +20,8 @@ async function start() {
   process.on("SIGINT", () => void shutdown("SIGINT"));
 
   try {
-    const address = await app.listen({ port: PORT, host: HOST });
-    app.log.info(`🚀 Server listening at ${address}`);
+    const address = await app.listen({ port: env.port, host: env.host });
+    app.log.info({ address }, "🚀 Server listening");
   } catch (err) {
     app.log.error({ err }, "Failed to start server");
     process.exit(1);
@@ -32,6 +29,7 @@ async function start() {
 }
 
 start().catch((err) => {
+  // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
 });
