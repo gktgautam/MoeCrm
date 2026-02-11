@@ -1,0 +1,15 @@
+import { FastifyReply } from "fastify";
+
+export function setSession(reply: FastifyReply, userId: string) {
+  reply.setCookie("session", userId, {
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24, // 1 day
+  });
+}
+
+export function clearSession(reply: FastifyReply) {
+  reply.clearCookie("session");
+}

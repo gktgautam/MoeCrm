@@ -1,0 +1,20 @@
+{
+  "name": "equeengage",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:api": "npm --workspace apps/api run dev",
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "build:web": "npm --workspace apps/web run build",
+    "build:api": "npm --workspace apps/api run build",
+    "lint": "npm -ws run lint",
+    "test": "npm -ws run test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
