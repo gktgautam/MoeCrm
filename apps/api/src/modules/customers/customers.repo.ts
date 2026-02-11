@@ -1,64 +1,77 @@
 import type { Pool } from "pg";
 
-export async function fetchCustomersUpdatedAfter(
-  dbCrm: Pool,
-  orgId: number,
-  updatedAfter?: string
-) {
-  if (updatedAfter) {
-    const { rows } = await dbCrm.query(
-      `select id as customer_id, org_id, email, name, phone, city, plan, updated_at
-       from customers
-       where org_id = $1 and updated_at > $2
-       order by updated_at asc
-       limit 5000`,
-      [orgId, new Date(updatedAfter)]
-    );
-    return rows;
-  }
+export type CrmCustomerRow = {
+  customer_id: number;
+  org_id: number;
+  email: string | null;
+  name: string | null;
+  phone: string | null;
+  city: string | null;
+  plan: string | null;
+  updated_at: Date;
+};
 
-  const { rows } = await dbCrm.query(
-    `select id as customer_id, org_id, email, name, phone, city, plan, updated_at
-     from customers
-     where org_id = $1
-     order by updated_at asc
-     limit 5000`,
-    [orgId]
-  );
+export async function fetchCustomersUpdatedAfter(dbCrm: Pool, orgId: number, updatedAfter?: string) {
+  const hasUpdatedAfter = Boolean(updatedAfter);
+  const query = `
+    select
+      id as customer_id,
+      org_id,
+      email,
+      name,
+      phone,
+      city,
+      plan,
+      updated_at
+    from customers
+    where org_id = $1
+      ${hasUpdatedAfter ? "and updated_at > $2" : ""}
+    order by updated_at asc
+    limit 5000
+  `;
+
+  const values = hasUpdatedAfter ? [orgId, new Date(updatedAfter as string)] : [orgId];
+  const { rows } = await dbCrm.query<CrmCustomerRow>(query, values);
   return rows;
 }
 
-export async function upsertCustomerSnapshots(dbEngage: Pool, rows: any[]) {
-  if (!rows.length) return 0;
+export async function upsertContactsFromCrm(dbEngage: Pool, rows: CrmCustomerRow[]) {
+  if (rows.length === 0) return 0;
 
-  // bulk upsert
-  const values: any[] = [];
+  const values: Array<number | string | Date | null> = [];
   const placeholders: string[] = [];
 
-  rows.forEach((r, i) => {
-    const idx = i * 4;
-    placeholders.push(`($${idx + 1}, $${idx + 2}, $${idx + 3}::jsonb, $${idx + 4})`);
+  rows.forEach((row, index) => {
+    const offset = index * 8;
+    placeholders.push(
+      `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8})`,
+    );
+
     values.push(
-      Number(r.org_id),
-      Number(r.customer_id),
-      JSON.stringify({
-        email: r.email,
-        name: r.name,
-        phone: r.phone,
-        city: r.city,
-        plan: r.plan,
-      }),
-      new Date(r.updated_at ?? new Date())
+      row.org_id,
+      row.customer_id,
+      row.email,
+      row.phone,
+      row.name,
+      row.city,
+      row.plan,
+      row.updated_at ?? new Date(),
     );
   });
 
   const sql = `
-    insert into customer_snapshot (org_id, customer_id, attrs, updated_at)
+    insert into contacts
+      (org_id, crm_customer_id, email, phone, first_name, city, plan, last_synced_at)
     values ${placeholders.join(",")}
-    on conflict (org_id, customer_id)
+    on conflict (org_id, crm_customer_id)
     do update set
-      attrs = excluded.attrs,
-      updated_at = excluded.updated_at
+      email = excluded.email,
+      phone = excluded.phone,
+      first_name = excluded.first_name,
+      city = excluded.city,
+      plan = excluded.plan,
+      last_synced_at = excluded.last_synced_at,
+      updated_at = now()
   `;
 
   await dbEngage.query(sql, values);

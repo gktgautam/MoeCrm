@@ -1,7 +1,7 @@
-// src/plugins/db.engage.knex.ts
 import fp from "fastify-plugin";
 import knex, { type Knex } from "knex";
 import { connectWithRetry } from "./_db.retry.js";
+import { env } from "../config.env.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -15,7 +15,7 @@ function makeKnex(url: string) {
     connection: url,
     pool: {
       min: 0,
-      max: Number(process.env.PG_POOL_MAX ?? 5),
+      max: env.pgPoolMax,
     },
   });
 }
@@ -25,10 +25,7 @@ async function healthCheck(k: Knex) {
 }
 
 export default fp(async (app) => {
-  const engageUrl = process.env.ENGAGE_DB_URL;
-  if (!engageUrl) throw new Error("Missing ENGAGE_DB_URL");
-
-  const kEngage = makeKnex(engageUrl);
+  const kEngage = makeKnex(env.engageDbUrl);
   app.decorate("kEngage", kEngage);
 
   app.addHook("onReady", async () => {
@@ -36,6 +33,6 @@ export default fp(async (app) => {
   });
 
   app.addHook("onClose", async () => {
-    await Promise.allSettled([kEngage.destroy()]);
+    await kEngage.destroy();
   });
 });

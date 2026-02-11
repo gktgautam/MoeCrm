@@ -1,59 +1,57 @@
-// src/plugins/jwt.auth.ts
 import fp from "fastify-plugin";
 import jwt from "@fastify/jwt";
+import type { FastifyReply } from "fastify";
+import { env } from "../config.env.js";
+
+export type AuthTokenPayload = {
+  sub: string;
+  orgId: string;
+  role: "owner" | "admin" | "manager" | "viewer";
+};
 
 declare module "fastify" {
   interface FastifyRequest {
     auth?: AuthTokenPayload;
   }
+
   interface FastifyInstance {
     signAuthToken(payload: AuthTokenPayload): string;
-    setAuthCookie(reply: any, token: string): void;
-    clearAuthCookie(reply: any): void;
+    setAuthCookie(reply: FastifyReply, token: string): void;
+    clearAuthCookie(reply: FastifyReply): void;
   }
 }
 
-export type AuthTokenPayload = {
-  sub: string; // user id
-  orgId: string;
-  role: "owner" | "admin" | "manager" | "viewer";
-};
+const AUTH_COOKIE_NAME = "ee_auth";
 
 export default fp(async (app) => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error("Missing JWT_SECRET");
-
-  await app.register(jwt, { secret });
-
-  const cookieName = "ee_auth";
-  const isProd = process.env.NODE_ENV === "production";
+  await app.register(jwt, { secret: env.jwtSecret });
 
   app.decorate("signAuthToken", (payload: AuthTokenPayload) => {
     return app.jwt.sign(payload, { expiresIn: "7d" });
   });
 
-  app.decorate("setAuthCookie", (reply: any, token: string) => {
-    reply.setCookie(cookieName, token, {
+  app.decorate("setAuthCookie", (reply: FastifyReply, token: string) => {
+    reply.setCookie(AUTH_COOKIE_NAME, token, {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
-      secure: isProd,
+      secure: env.isProd,
       maxAge: 60 * 60 * 24 * 7,
     });
   });
 
-  app.decorate("clearAuthCookie", (reply: any) => {
-    reply.clearCookie(cookieName, { path: "/" });
+  app.decorate("clearAuthCookie", (reply: FastifyReply) => {
+    reply.clearCookie(AUTH_COOKIE_NAME, { path: "/" });
   });
 
-  // Parse JWT from cookie into req.auth (best-effort)
   app.addHook("preHandler", async (req) => {
-    const token = (req.cookies as any)?.[cookieName];
+    const token = req.cookies[AUTH_COOKIE_NAME];
     if (!token) return;
+
     try {
-      req.auth = app.jwt.verify(token) as AuthTokenPayload;
+      req.auth = app.jwt.verify<AuthTokenPayload>(token);
     } catch {
-      // ignore invalid cookie; guards handle it
+      // Intentionally ignore invalid cookie and rely on auth guard.
     }
   });
 });
