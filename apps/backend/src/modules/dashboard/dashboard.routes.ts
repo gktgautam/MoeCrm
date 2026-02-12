@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { requireAuth, requireOrgAccess } from "../auth/auth.guard.js";
-import { fetchDashboardStats } from "./dashboard.controller.js";
+import { fetchDashboardStats } from "./dashboard.service.js";
 import { resolveOrgIdFromRequest } from "../auth/org-access.js";
 
 const QuerySchema = Type.Object({ orgId: Type.Optional(Type.Integer({ minimum: 1 })) });

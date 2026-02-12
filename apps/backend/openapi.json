@@ -594,7 +594,7 @@
         }
       }
     },
-    "/api/v1/customers/customers/sync": {
+    "/api/v1/customers/sync": {
       "post": {
         "tags": [
           "customers"

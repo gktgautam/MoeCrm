@@ -1,8 +1,8 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { requireAuth, requireOrgAccess, requireRole } from "../auth/auth.guard.js";
-import { fetchCustomersUpdatedAfter, upsertContactsFromCrm } from "./customers.repo.js";
 import { resolveOrgIdFromRequest } from "../auth/org-access.js";
+import { syncCustomersFromCrm } from "./customers.service.js";
 
 const BodySchema = Type.Object({
   orgId: Type.Optional(Type.Integer({ minimum: 1 })),
@@ -21,7 +21,7 @@ const ErrorSchema = Type.Object({
 });
 
 const routes: FastifyPluginAsync = async (app) => {
-  app.post<{ Body: { orgId?: number; updatedAfter?: string } }>("/customers/sync", {
+  app.post<{ Body: { orgId?: number; updatedAfter?: string } }>("/sync", {
     schema: {
       tags: ["customers"],
       security: [{ cookieAuth: [] }],
@@ -42,10 +42,14 @@ const routes: FastifyPluginAsync = async (app) => {
       }
 
       const orgId = resolveOrgIdFromRequest(req, { source: "body" });
-      const rows = await fetchCustomersUpdatedAfter(app.dbCrm, orgId, req.body.updatedAfter);
-      const upserted = await upsertContactsFromCrm(app.dbEngage, rows);
+      const result = await syncCustomersFromCrm({
+        dbCrm: app.dbCrm,
+        dbEngage: app.dbEngage,
+        orgId,
+        updatedAfter: req.body.updatedAfter,
+      });
 
-      return { ok: true as const, fetched: rows.length, upserted };
+      return { ok: true as const, ...result };
     },
   });
 };
