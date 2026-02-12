@@ -1,9 +1,10 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
-import { requireAuth } from "../auth/auth.guard.js";
+import { requireAuth, requireOrgAccess } from "../auth/auth.guard.js";
 import { fetchDashboardStats } from "./dashboard.controller.js";
+import { resolveOrgIdFromRequest } from "../auth/org-access.js";
 
-const QuerySchema = Type.Object({ orgId: Type.Integer({ minimum: 1 }) });
+const QuerySchema = Type.Object({ orgId: Type.Optional(Type.Integer({ minimum: 1 })) });
 
 const ResponseSchema = Type.Object({
   ok: Type.Literal(true),
@@ -16,16 +17,17 @@ const ResponseSchema = Type.Object({
 });
 
 const dashboardRoutes: FastifyPluginAsync = async (app) => {
-  app.get<{ Querystring: { orgId: number } }>("/stats", {
+  app.get<{ Querystring: { orgId?: number } }>("/stats", {
     schema: {
       tags: ["dashboard"],
       security: [{ cookieAuth: [] }],
       querystring: QuerySchema,
       response: { 200: ResponseSchema },
     },
-    preHandler: requireAuth,
+    preHandler: [requireAuth, requireOrgAccess({ source: "query" })],
     handler: async (req) => {
-      const stats = await fetchDashboardStats(app, req.query.orgId);
+      const orgId = resolveOrgIdFromRequest(req, { source: "query" });
+      const stats = await fetchDashboardStats(app, orgId);
       return { ok: true as const, stats };
     },
   });

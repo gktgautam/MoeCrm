@@ -1,7 +1,4 @@
-// src/features/auth/AuthProvider.tsx
 import {
-  createContext,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -10,25 +7,9 @@ import {
 } from "react";
 import { api } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
-import type { AuthUser, MeResponse, Role } from "./auth.types";
-
-type LoginPayload = { orgId: number; email: string; password: string };
-
-type AuthState =
-  | { status: "loading" }
-  | { status: "guest" }
-  | { status: "authed"; user: AuthUser; permissions: string[] };
-
-type AuthContextValue = {
-  state: AuthState;
-  login: (payload: LoginPayload) => Promise<void>;
-  logout: () => Promise<void>;
-  refreshMe: () => Promise<void>;
-  hasRole: (roles: Role[]) => boolean;
-  hasPerm: (perm: string) => boolean;
-};
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+import type { MeResponse, Role } from "./auth.types";
+import { hasPermission } from "./perm";
+import { AuthContext, type AuthContextValue, type AuthState, type LoginPayload } from "./auth.context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: "loading" });
@@ -67,12 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async ({ orgId, email, password }: LoginPayload) => {
-      // backend returns { ok: true } and sets ee_auth cookie
       await api.post("/auth/login", { orgId, email, password });
-
-      // ✅ hydrate role-based UI info
       await refreshMe();
-
       queryClient.clear();
     },
     [refreshMe]
@@ -81,36 +58,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await api.post("/auth/logout");
-    } catch {}
+    } catch {
+      // ignore logout network errors and clear local auth state
+    }
     setState({ status: "guest" });
     queryClient.clear();
   }, []);
 
-  const hasRole = (roles: Role[]) => {
-    if (state.status !== "authed") return false;
-    return roles.includes(state.user.role);
-  };
+  const hasRole = useCallback(
+    (roles: Role[]) => {
+      if (state.status !== "authed") return false;
+      return roles.includes(state.user.role);
+    },
+    [state]
+  );
 
-  const hasPerm = (perm: string) => {
-    if (state.status !== "authed") return false;
-    return state.permissions.includes(perm);
-  };
+  const hasPerm = useCallback(
+    (perm: string) => {
+      if (state.status !== "authed") return false;
+      return hasPermission(state.permissions, perm);
+    },
+    [state]
+  );
 
   const value = useMemo<AuthContextValue>(
     () => ({ state, login, logout, refreshMe, hasRole, hasPerm }),
-    [state, login, logout, refreshMe]
+    [state, login, logout, refreshMe, hasRole, hasPerm]
   );
 
-  // Optional: global loading screen
   if (state.status === "loading") {
     return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
 }

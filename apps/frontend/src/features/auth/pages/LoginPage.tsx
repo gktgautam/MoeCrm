@@ -1,7 +1,7 @@
 // src/features/auth/pages/LoginPage.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth/useAuth";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -14,6 +14,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  const getErrorMessage = (error: unknown) => {
+    if (typeof error === "object" && error !== null && "response" in error) {
+      const maybeResponse = (error as { response?: { data?: { error?: string } } }).response;
+      return maybeResponse?.data?.error ?? "LOGIN_FAILED";
+    }
+
+    return "LOGIN_FAILED";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
@@ -21,8 +30,8 @@ export default function LoginPage() {
     try {
       await login({ orgId, email, password });
       navigate("/", { replace: true });
-    } catch (e: any) {
-      setErr(e?.response?.data?.error ?? "LOGIN_FAILED");
+    } catch (error: unknown) {
+      setErr(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
