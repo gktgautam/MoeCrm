@@ -1,34 +1,38 @@
+// src/plugins/db.engage.pg.ts
 import fp from "fastify-plugin";
 import { Pool } from "pg";
 import { connectWithRetry } from "./_db.retry.js";
-import { env } from "../config.env.js";
 
-export default fp(async function dbEngagePgPlugin(app) {
-  const connectionString = env.engageDbUrl;
+declare module "fastify" {
+  interface FastifyInstance {
+    dbEngage: Pool;
+  }
+}
 
-  const pool = new Pool({
-    connectionString,
-    max: 10,
-    idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 5_000,
-  });
+export default fp(async (app) => {
+  const url = process.env.ENGAGE_DB_URL;
+  if (!url) throw new Error("Missing ENGAGE_DB_URL");
 
-  const healthCheck = async () => {
-    const client = await pool.connect();
+  const pool = new Pool({ connectionString: url });
+
+  async function healthCheck() {
+    const c = await pool.connect();
     try {
-      await client.query("select 1");
+      await c.query("select 1");
     } finally {
-      client.release();
+      c.release();
     }
-  };
+  }
 
-  await connectWithRetry(app, healthCheck, {
-    name: "engage-pg",
-    retries: 5,
-    delayMs: 2000,
+  app.decorate("dbEngage", pool);
+
+  app.addHook("onReady", async () => {
+    await connectWithRetry(app, healthCheck, {
+      name: "engage-pg",
+      maxAttempts: Number(process.env.DB_CONNECT_ATTEMPTS ?? 5),
+      delayMs: Number(process.env.DB_CONNECT_DELAY_MS ?? 800),
+    });
   });
-
-  app.decorate("engagePg", pool);
 
   app.addHook("onClose", async () => {
     app.log.info("Closing Engage PG pool...");

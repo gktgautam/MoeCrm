@@ -1,9 +1,10 @@
+// src/plugins/_db.retry.ts
 import type { FastifyInstance } from "fastify";
 
 type RetryOptions = {
-  retries: number;
+  maxAttempts: number;
   delayMs: number;
-  name: string; // "crm-db" | "engage-db"
+  name: string;
 };
 
 export async function connectWithRetry(
@@ -13,35 +14,46 @@ export async function connectWithRetry(
 ) {
   let lastErr: unknown;
 
-  for (let attempt = 1; attempt <= opts.retries; attempt++) {
+  for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {
     try {
-      app.log.info(
-        { name: opts.name, attempt, retries: opts.retries },
-        "DB connect attempt"
-      );
+      app.log.info({ name: opts.name, attempt }, "DB connecting...");
+
       await fn();
-      app.log.info({ name: opts.name }, "DB connected");
+
+      if (attempt === 1) {
+        app.log.info({ name: opts.name }, "DB connected ✅");
+      } else {
+        app.log.info(
+          { name: opts.name, retriesUsed: attempt - 1 },
+          "DB connected after retry ✅"
+        );
+      }
       return;
-    } catch (err) {
+    } catch (err: any) {
       lastErr = err;
 
-      app.log.error(
-        {
-          name: opts.name,
-          attempt,
-          err,
-          causes: Array.isArray((err as any)?.errors)
-            ? (err as any).errors
-            : undefined,
-        },
-        "DB connection failed"
-      );
+      const retriesLeft = opts.maxAttempts - attempt;
 
-      if (attempt < opts.retries) {
+      if (retriesLeft > 0) {
+        app.log.warn(
+          {
+            name: opts.name,
+            attempt,
+            retriesLeft,
+            code: err?.code,
+            message: err?.message,
+          },
+          "DB connection failed, retrying..."
+        );
         await new Promise((r) => setTimeout(r, opts.delayMs));
       }
     }
   }
+
+  app.log.error(
+    { name: opts.name, err: lastErr },
+    "DB connect failed after all attempts ❌"
+  );
 
   throw lastErr;
 }

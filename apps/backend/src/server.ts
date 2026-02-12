@@ -3,12 +3,12 @@ import { buildApp } from "./app.js";
 import { env } from "./config.env.js";
 
 async function start() {
-  const app = await buildApp();
+  const app = await buildApp(); // ✅ build once
 
   const shutdown = async (signal: string) => {
     try {
       app.log.info({ signal }, "Shutting down...");
-      await app.close();
+      await app.close(); // triggers onClose hooks (pg pools + knex.destroy)
       process.exit(0);
     } catch (err) {
       app.log.error({ err }, "Shutdown error");
@@ -23,6 +23,7 @@ async function start() {
     const address = await app.listen({ port: env.port, host: env.host });
     app.log.info({ address }, "🚀 Server listening");
   } catch (err: any) {
+    // If DB plugin throws during startup, it lands here and process exits.
     app.log.error(
       {
         err,
