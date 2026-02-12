@@ -52,7 +52,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(jwtAuthPlugin);
 
   // --- DB plugins (fail-fast if DB down) ---
-  await app.register(dbCrmPlugin);
+  // await app.register(dbCrmPlugin);
   await app.register(dbEngagePgPlugin);
   await app.register(dbEngageKnexPlugin);
 
