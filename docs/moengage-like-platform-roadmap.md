@@ -124,3 +124,8 @@ Use this repo to implement the **Phase 1 wedge**:
 4. Add campaign execution logs and simple conversion reporting.
 
 Once this loop works reliably, expand channel count and intelligence features.
+
+
+## 11) Need an implementation-level plan?
+
+See `docs/equeengage-next-steps-playbook.md` for a detailed 90-day execution sequence, P0/P1 backlog, and a start-tomorrow checklist.
