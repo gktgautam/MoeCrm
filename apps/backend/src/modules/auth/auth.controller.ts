@@ -1,20 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { SignupBody, LoginBody } from "./auth.schemas.js";
 import { createAppUser, verifyLogin } from "./auth.service.js";
-
-function permissionsForRole(role: string) {
-  switch (role) {
-    case "owner":
-    case "admin":
-      return ["segments:read", "segments:write", "campaigns:read", "campaigns:write", "settings:write"];
-    case "manager":
-      return ["segments:read", "segments:write", "campaigns:read", "campaigns:write"];
-    case "viewer":
-      return ["segments:read", "campaigns:read"];
-    default:
-      return [];
-  }
-}
+import { resolveEffectivePermissions } from "./permissions.service.js";
 
 
 export const authController = {
@@ -99,7 +86,11 @@ export const authController = {
 
     const u = rows[0];
     if (!u) return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
-    console.log()
+    const permissions = await resolveEffectivePermissions(req.server.dbEngage, {
+      orgId,
+      userId,
+      roleCode: u.role,
+    });
 
     return {
       ok: true,
@@ -112,7 +103,7 @@ export const authController = {
         role: u.role, // or use role from token; DB is source of truth better
         status: u.status,
       },
-      permissions: permissionsForRole(u.role),
+      permissions,
     };
   },
 

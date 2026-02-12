@@ -1,5 +1,5 @@
 // src/features/auth/auth.types.ts
-export type Role = "owner" | "admin" | "manager" | "viewer";
+export type Role = "owner" | "admin" | "manager" | "marketer" | "developer" | "analyst" | (string & {});
 
 export type AuthUser = {
   id: number;

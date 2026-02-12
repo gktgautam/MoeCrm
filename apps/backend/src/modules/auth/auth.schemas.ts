@@ -43,7 +43,10 @@ export const Role = Type.Union([
   Type.Literal("owner"),
   Type.Literal("admin"),
   Type.Literal("manager"),
-  Type.Literal("viewer"),
+  Type.Literal("marketer"),
+  Type.Literal("developer"),
+  Type.Literal("analyst"),
+  Type.String({ minLength: 1, maxLength: 80 }),
 ]);
 export type TRole = Static<typeof Role>;
 
