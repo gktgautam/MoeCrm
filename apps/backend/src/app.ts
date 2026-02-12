@@ -8,22 +8,22 @@ import dbEngagePgPlugin from "./plugins/db.engage.pg.js";
 import dbEngageKnexPlugin from "./plugins/db.engage.knex.js";
 
 import routes from "./routes.js";
-import { env } from "./config.env.js";
+import { env } from "@/env";
 import { makeLoggerConfig } from "./lib/logger.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
-  const app = Fastify({ logger: makeLoggerConfig(env.isProd) });
+  const app = Fastify({ logger: makeLoggerConfig(env.ISPROD) });
 
   // --- Core plugins (before routes) ---
   await app.register(swaggerPlugin);
 
   await app.register(cookie, {
-    secret: env.cookieSecret, // ok even if undefined (only needed for signed cookies)
+    secret: env.COOKIE_SECRET, // ok even if undefined (only needed for signed cookies)
     hook: "onRequest",
     parseOptions: {
       httpOnly: true,
       sameSite: "lax",
-      secure: env.isProd,
+      secure: env.ISPROD,
       path: "/",
     },
   });
