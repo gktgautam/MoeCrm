@@ -22,8 +22,15 @@ async function start() {
   try {
     const address = await app.listen({ port: env.port, host: env.host });
     app.log.info({ address }, "🚀 Server listening");
-  } catch (err) {
-    app.log.error({ err }, "Failed to start server");
+  } catch (err: any) {
+    app.log.error(
+      {
+        err,
+        code: err?.code,
+        causes: Array.isArray(err?.errors) ? err.errors : undefined,
+      },
+      "Failed to start server"
+    );
     process.exit(1);
   }
 }

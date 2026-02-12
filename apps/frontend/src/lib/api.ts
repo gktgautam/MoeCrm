@@ -1,9 +1,10 @@
 // api.ts
 import axios from "axios";
 import { queryClient } from "./queryClient";
+import { config } from "@/config";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://cms.equentis.com/api",
+  baseURL: config.apiUrl || "http://127.0.0.1:8080/api",
   withCredentials: true, // important for cookies!
 });
  
