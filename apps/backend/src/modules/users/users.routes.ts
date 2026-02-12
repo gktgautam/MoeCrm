@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
-import { requireAuth, requireOrgAccess, requireRole } from "../auth/auth.guard.js";
+import { requireAnyPermission, requireAuth, requireOrgAccess } from "../auth/auth.guard.js";
 import { listUsersByOrg } from "./users.controller.js";
 import { resolveOrgIdFromRequest } from "../auth/org-access.js";
 
@@ -30,7 +30,7 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
       querystring: QuerySchema,
       response: { 200: ResponseSchema },
     },
-    preHandler: [requireAuth, requireRole(["admin", "manager"]), requireOrgAccess({ source: "query" })],
+    preHandler: [requireAuth, requireAnyPermission(["team:read"]), requireOrgAccess({ source: "query" })],
     handler: async (req) => {
       const orgId = resolveOrgIdFromRequest(req, { source: "query" });
       const users = await listUsersByOrg(app, orgId);

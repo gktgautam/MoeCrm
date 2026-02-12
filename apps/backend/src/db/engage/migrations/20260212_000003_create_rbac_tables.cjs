@@ -17,10 +17,32 @@ exports.up = async (knex) => {
     t.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
     t.timestamp("updated_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
 
-    t.unique(["org_id", "role_key"]);
-    t.unique(["org_id", "name"]);
     t.index(["org_id"], "rbac_roles_org_id_idx");
   });
+
+  await knex.schema.raw(`
+    ALTER TABLE rbac_roles
+    ADD CONSTRAINT rbac_roles_scope_check
+    CHECK ((is_system = true AND org_id IS NULL) OR (is_system = false AND org_id IS NOT NULL));
+  `);
+
+  await knex.schema.raw(`
+    CREATE UNIQUE INDEX rbac_roles_system_role_key_uniq_idx
+    ON rbac_roles (role_key)
+    WHERE org_id IS NULL;
+  `);
+
+  await knex.schema.raw(`
+    CREATE UNIQUE INDEX rbac_roles_org_role_key_uniq_idx
+    ON rbac_roles (org_id, role_key)
+    WHERE org_id IS NOT NULL;
+  `);
+
+  await knex.schema.raw(`
+    CREATE UNIQUE INDEX rbac_roles_org_name_uniq_idx
+    ON rbac_roles (org_id, name)
+    WHERE org_id IS NOT NULL;
+  `);
 
   await knex.schema.createTable("rbac_role_permissions", (t) => {
     t.bigInteger("role_id").notNullable().references("id").inTable("rbac_roles").onDelete("CASCADE");
@@ -72,7 +94,7 @@ exports.up = async (knex) => {
       (NULL, 'marketer', 'Marketer', 'Can create and manage campaigns with approval workflow support', true, false),
       (NULL, 'developer', 'Developer', 'Integration focused role with limited live access', true, false),
       (NULL, 'analyst', 'Analyst', 'Can view and export reports and segmentation data', true, false)
-    ON CONFLICT (org_id, role_key) DO NOTHING;
+    ON CONFLICT DO NOTHING;
   `);
 
   await knex.schema.raw(`
@@ -165,6 +187,11 @@ exports.down = async (knex) => {
   await knex.schema.alterTable("app_users", (t) => {
     t.dropColumn("role_id");
   });
+
+  await knex.schema.raw(`DROP INDEX IF EXISTS rbac_roles_org_name_uniq_idx;`);
+  await knex.schema.raw(`DROP INDEX IF EXISTS rbac_roles_org_role_key_uniq_idx;`);
+  await knex.schema.raw(`DROP INDEX IF EXISTS rbac_roles_system_role_key_uniq_idx;`);
+  await knex.schema.raw(`ALTER TABLE rbac_roles DROP CONSTRAINT IF EXISTS rbac_roles_scope_check;`);
 
   await knex.schema.dropTableIfExists("rbac_role_permissions");
   await knex.schema.dropTableIfExists("rbac_roles");

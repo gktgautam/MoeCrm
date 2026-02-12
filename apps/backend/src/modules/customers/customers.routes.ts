@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
-import { requireAuth, requireOrgAccess, requireRole } from "../auth/auth.guard.js";
+import { requireAnyPermission, requireAuth, requireOrgAccess } from "../auth/auth.guard.js";
 import { resolveOrgIdFromRequest } from "../auth/org-access.js";
 import { syncCustomersFromCrm } from "./customers.service.js";
 
@@ -33,7 +33,7 @@ const routes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [
       requireAuth,
-      requireRole(["owner", "admin", "manager"]),
+      requireAnyPermission(["integrations:write"]),
       requireOrgAccess({ source: "body" }),
     ],
     handler: async (req, reply) => {
