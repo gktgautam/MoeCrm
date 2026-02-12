@@ -7,7 +7,7 @@ import { env } from "@/env";
 export type AuthTokenPayload = {
   sub: string;
   orgId: string;
-  role: "owner" | "admin" | "manager" | "viewer";
+  role: string;
 };
 
 declare module "fastify" {

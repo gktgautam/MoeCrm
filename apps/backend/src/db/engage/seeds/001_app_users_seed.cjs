@@ -1,11 +1,14 @@
-// apps/api/src/db/seeds/engage/001_app_users_seed.cjs
 const argon2 = require("argon2");
 
 exports.seed = async function seed(knex) {
-  // Clear existing (optional, for dev only)
   await knex("app_users").del();
 
-  const passwordHash = await argon2.hash("Password@123"); // dev password
+  const passwordHash = await argon2.hash("Password@123");
+
+  const adminRole = await knex("rbac_roles")
+    .where({ org_id: null, role_key: "admin" })
+    .select("id")
+    .first();
 
   await knex("app_users").insert([
     {
@@ -16,7 +19,7 @@ exports.seed = async function seed(knex) {
       display_name: "Admin User",
       password_hash: passwordHash,
       auth_provider: "password",
-      role: "owner",
+      role_id: adminRole.id,
       status: "active",
       invited_at: knex.fn.now(),
       last_login_at: null,

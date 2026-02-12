@@ -5,7 +5,7 @@ export async function createAppUser(args: {
   orgId: number;
   email: string;
   password: string;
-  role?: "owner" | "admin" | "manager" | "viewer";
+  roleKey?: string;
 }) {
   const passwordHash = await argon2.hash(args.password, {
     type: argon2.argon2id,      // best variant
@@ -16,11 +16,21 @@ export async function createAppUser(args: {
 
   const res = await args.db.query(
     `
-      insert into app_users (org_id, email, password_hash, role)
-      values ($1, $2, $3, coalesce($4, 'owner'))
-      returning id, org_id, email, role
+      insert into app_users (org_id, email, password_hash, role_id)
+      values (
+        $1,
+        $2,
+        $3,
+        coalesce(
+          (select id from rbac_roles where org_id = $1 and role_key = $4 limit 1),
+          (select id from rbac_roles where org_id is null and role_key = $4 limit 1),
+          (select id from rbac_roles where org_id is null and role_key = 'admin' limit 1)
+        )
+      )
+      returning id, org_id, email,
+        (select role_key from rbac_roles where id = app_users.role_id) as role
     `,
-    [args.orgId, args.email.toLowerCase(), passwordHash, args.role ?? null]
+    [args.orgId, args.email.toLowerCase(), passwordHash, args.roleKey ?? null],
   );
 
   return res.rows[0];
@@ -33,7 +43,13 @@ export async function verifyLogin(args: {
   password: string;
 }) {
   const res = await args.db.query(
-    `select id, org_id, email, role, password_hash from app_users where org_id = $1 and email = $2 limit 1`,
+    `
+    select u.id, u.org_id, u.email, u.password_hash, r.role_key as role
+    from app_users u
+    join rbac_roles r on r.id = u.role_id
+    where u.org_id = $1 and u.email = $2
+    limit 1
+    `,
     [args.orgId, args.email.toLowerCase()]
   );
 

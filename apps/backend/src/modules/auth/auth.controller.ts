@@ -2,20 +2,6 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import type { SignupBody, LoginBody } from "./auth.schemas.js";
 import { createAppUser, verifyLogin } from "./auth.service.js";
 
-function permissionsForRole(role: string) {
-  switch (role) {
-    case "owner":
-    case "admin":
-      return ["segments:read", "segments:write", "campaigns:read", "campaigns:write", "settings:write"];
-    case "manager":
-      return ["segments:read", "segments:write", "campaigns:read", "campaigns:write"];
-    case "viewer":
-      return ["segments:read", "campaigns:read"];
-    default:
-      return [];
-  }
-}
-
 
 export const authController = {
   signup: async (req: FastifyRequest<{ Body: SignupBody }>, reply: FastifyReply) => {
@@ -25,7 +11,7 @@ export const authController = {
         orgId: req.body.orgId,
         email: req.body.email,
         password: req.body.password,
-        role: req.body.role,
+        roleKey: req.body.role,
       });
 
       const token = req.server.signAuthToken({
@@ -89,9 +75,21 @@ export const authController = {
     // Engage DB se app user read (safe fields only)
     const { rows } = await req.server.dbEngage.query(
       `
-      select id, org_id, email, first_name, last_name, role, status
-      from app_users
-      where id = $1 and org_id = $2
+      select
+        u.id,
+        u.org_id,
+        u.email,
+        u.first_name,
+        u.last_name,
+        r.role_key as role,
+        u.status,
+        coalesce(array_agg(distinct p.permission_key) filter (where p.permission_key is not null), '{}') as permissions
+      from app_users u
+      join rbac_roles r on r.id = u.role_id
+      left join rbac_role_permissions rp on rp.role_id = r.id
+      left join rbac_permissions p on p.id = rp.permission_id
+      where u.id = $1 and u.org_id = $2
+      group by u.id, u.org_id, u.email, u.first_name, u.last_name, r.role_key, u.status
       limit 1
       `,
       [userId, orgId]
@@ -99,8 +97,6 @@ export const authController = {
 
     const u = rows[0];
     if (!u) return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
-    console.log()
-
     return {
       ok: true,
       user: {
@@ -112,7 +108,7 @@ export const authController = {
         role: u.role, // or use role from token; DB is source of truth better
         status: u.status,
       },
-      permissions: permissionsForRole(u.role),
+      permissions: u.permissions,
     };
   },
 

@@ -12,12 +12,7 @@ const UserSchema = Type.Object({
   id: Type.Integer(),
   org_id: Type.Integer(),
   email: Type.String(),
-  role: Type.Union([
-    Type.Literal("owner"),
-    Type.Literal("admin"),
-    Type.Literal("manager"),
-    Type.Literal("viewer"),
-  ]),
+  role: Type.String({ minLength: 1 }),
   status: Type.Union([Type.Literal("invited"), Type.Literal("active"), Type.Literal("disabled")]),
   created_at: Type.String(),
 });
@@ -35,7 +30,7 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
       querystring: QuerySchema,
       response: { 200: ResponseSchema },
     },
-    preHandler: [requireAuth, requireRole(["owner", "admin", "manager"]), requireOrgAccess({ source: "query" })],
+    preHandler: [requireAuth, requireRole(["admin", "manager"]), requireOrgAccess({ source: "query" })],
     handler: async (req) => {
       const orgId = resolveOrgIdFromRequest(req, { source: "query" });
       const users = await listUsersByOrg(app, orgId);

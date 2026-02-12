@@ -11,7 +11,7 @@ import { Type, type Static } from "@sinclair/typebox";
  *
  * Notes:
  * - Use Type.Literal(true) for success responses to avoid ambiguity.
- * - Use Role union everywhere instead of generic string to keep RBAC strict.
+ * - Role key is DB-driven so schema accepts role strings (default + custom).
  * - IDs: orgId in requests is number, but JWT payload stores as string for compactness.
  */
 
@@ -39,12 +39,7 @@ export const Password = Type.String({ minLength: 8, maxLength: 200 });
  * - /me response
  * - requireRole guard
  */
-export const Role = Type.Union([
-  Type.Literal("owner"),
-  Type.Literal("admin"),
-  Type.Literal("manager"),
-  Type.Literal("viewer"),
-]);
+export const Role = Type.String({ minLength: 1, maxLength: 100 });
 export type TRole = Static<typeof Role>;
 
 // -----------------------------
@@ -87,7 +82,7 @@ export type TAuthPayload = Static<typeof AuthPayloadSchema>;
  * Signup body:
  * - orgId: org context
  * - email/password: credentials
- * - role: optional (if not provided, backend may default to "owner" on first user)
+ * - role: optional (if not provided, backend defaults to "admin" when role is not provided)
  */
 export const signupBodySchema = Type.Object({
   orgId: OrgId,
@@ -126,7 +121,7 @@ export const meResponseSchema = Type.Object({
     email: Type.String({ format: "email" }),
     firstName: Type.Optional(Type.String()),
     lastName: Type.Optional(Type.String()),
-    role: Role, // ✅ strict role instead of Type.String()
+    role: Role,
     status: Type.Optional(Type.String()),
   }),
   permissions: Type.Array(Type.String()),
