@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "./useAuth";
 import { canAccess, type AccessRule } from "./access-control";
 
 export default function ProtectedRoute({

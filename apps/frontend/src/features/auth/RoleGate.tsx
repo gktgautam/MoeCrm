@@ -1,6 +1,6 @@
 // src/features/auth/RoleGate.tsx
 import type { Role } from "./auth.types";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "./useAuth";
 
 export default function RoleGate({
   allow,

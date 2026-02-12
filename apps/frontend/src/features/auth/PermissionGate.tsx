@@ -1,6 +1,6 @@
 // src/features/auth/PermissionGate.tsx
 import React from "react";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "./useAuth";
 import { hasPermission } from "./perm";
 /**
  * PermissionGate
