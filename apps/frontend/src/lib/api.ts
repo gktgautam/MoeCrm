@@ -1,15 +1,13 @@
-// src/lib/api.ts
 import axios from "axios";
-import { config } from "@/config";
+import { appConfig } from "@/config/app-config";
 import { queryClient } from "@/lib/queryClient";
 
 export const api = axios.create({
-  baseURL: config.apiUrl,      // ✅ http://localhost:8080/api
-  withCredentials: true,       // ✅ send cookies (ee_auth)
-  timeout: Number(import.meta.env.VITE_API_TIMEOUT_MS ?? 15000),
+  baseURL: appConfig.apiUrl,
+  withCredentials: true,
+  timeout: appConfig.apiTimeoutMs,
 });
 
-// ✅ global 401 handler
 api.interceptors.response.use(
   (res) => res,
   (error) => {
@@ -21,5 +19,5 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );

@@ -15,7 +15,7 @@ import { env } from "@/env";
 import { makeLoggerConfig } from "./lib/logger.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
-  const app = Fastify({ logger: makeLoggerConfig(env.ISPROD) }).withTypeProvider<TypeBoxTypeProvider>();;
+  const app = Fastify({ logger: makeLoggerConfig(env.ISPROD) }).withTypeProvider<TypeBoxTypeProvider>();
 
   // --- Core plugins (before routes) ---
   await app.register(swaggerPlugin);

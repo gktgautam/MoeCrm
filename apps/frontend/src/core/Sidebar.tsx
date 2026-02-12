@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { APP_ROUTES } from "@/app/router/route-config";
+import { APP_ROUTES } from "@/app/router/app-routes";
 import { NAV } from "./nav";
 import { useAuth } from "@/features/auth/useAuth";
 import { canAccess } from "@/features/auth/access-control";

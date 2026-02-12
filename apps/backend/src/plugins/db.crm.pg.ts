@@ -1,8 +1,7 @@
-// src/plugins/db.crm.pg.ts
 import fp from "fastify-plugin";
 import { Pool } from "pg";
-import { connectWithRetry } from "./_db.retry.js";
 import { env } from "@/env";
+import { createPostgresPool, registerPostgresPoolLifecycle } from "./postgres-pool.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -11,36 +10,15 @@ declare module "fastify" {
 }
 
 export default fp(async (app) => {
-  const url = env.CRM_DB_URL;
-  if (!url) throw new Error("Missing CRM_DB_URL");
+  if (!env.CRM_DB_URL) throw new Error("Missing CRM_DB_URL");
 
-  const pool = new Pool({
-    connectionString: url,
-    statement_timeout: 5000, // 5 sec
-    query_timeout: 5000,
-  });
-
-  async function healthCheck() {
-    const c = await pool.connect();
-    try {
-      await c.query("select 1");
-    } finally {
-      c.release();
-    }
-  }
-
+  const pool = createPostgresPool(env.CRM_DB_URL);
   app.decorate("dbCrm", pool);
 
-  app.addHook("onReady", async () => {
-    await connectWithRetry(app, healthCheck, {
-      name: "crm-db",
-      maxAttempts: Number(env.DB_CONNECT_ATTEMPTS ?? 5),
-      delayMs: Number(env.DB_CONNECT_DELAY_MS ?? 800),
-    });
-  });
-
-  app.addHook("onClose", async () => {
-    app.log.info("Closing CRM DB pool...");
-    await pool.end();
+  registerPostgresPoolLifecycle(app, pool, {
+    name: "crm-db",
+    maxAttempts: Number(env.DB_CONNECT_ATTEMPTS ?? 5),
+    delayMs: Number(env.DB_CONNECT_DELAY_MS ?? 800),
+    closeLogMessage: "Closing CRM DB pool...",
   });
 });

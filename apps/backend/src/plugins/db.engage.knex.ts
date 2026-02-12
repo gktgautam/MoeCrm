@@ -1,8 +1,8 @@
 // src/plugins/db.engage.knex.ts
 import fp from "fastify-plugin";
-import knex from "knex"; 
+import knex from "knex";
 import { env } from "@/env";
-import { connectWithRetry } from "./_db.retry.js";
+import { connectWithRetry } from "./db-retry.js";
 
 declare module "fastify" {
   interface FastifyInstance {
