@@ -14,7 +14,11 @@ export default fp(async (app) => {
   const url = env.ENGAGE_DB_URL;
   if (!url) throw new Error("Missing ENGAGE_DB_URL");
 
-  const pool = new Pool({ connectionString: url });
+  const pool = new Pool({
+    connectionString: url,
+    statement_timeout: 5000, // 5 sec
+    query_timeout: 5000,
+  });
 
   async function healthCheck() {
     const c = await pool.connect();

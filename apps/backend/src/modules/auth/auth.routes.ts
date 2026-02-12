@@ -21,16 +21,17 @@ const authRoutes: FastifyPluginAsync = async (app) => {
     },
     handler: authController.login,
   });
+ 
 
   app.get("/me", {
-    schema: {
-      tags: ["auth"],
-      security: [{ cookieAuth: [] }],
-      response: { 200: meResponseSchema, 401: ErrorResponse },
-    },
-    preHandler: requireAuth,
-    handler: authController.me,
-  });
+      schema: {
+        tags: ["auth"],
+        security: [{ cookieAuth: [] }],
+        response: { 200: meResponseSchema, 401: ErrorResponse },
+      },
+      preHandler: requireAuth,
+      handler: authController.me,
+    });
 
   app.post("/logout", {
     schema: {

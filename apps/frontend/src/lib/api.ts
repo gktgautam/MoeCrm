@@ -4,8 +4,8 @@ import { queryClient } from "./queryClient";
 import { config } from "@/config";
 
 export const api = axios.create({
-  baseURL: config.apiUrl || "http://127.0.0.1:8080/api",
-  withCredentials: true, // important for cookies!
+  baseURL: config.apiUrl,
+  withCredentials: true,  
 });
  
 // ✅ GLOBAL 401 HANDLER (cookie expired, invalid, logged out, etc.)

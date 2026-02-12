@@ -76,15 +76,26 @@ export default fp(async (app) => {
   });
 
   // ✅ Global optional auth: sets req.auth if token exists + valid
-  app.addHook("preHandler", async (req) => {
-    const token = app.getAuthToken(req);
-    if (!token) return;
+    app.addHook("preHandler", async (req, reply) => {
+      req.log.info({ cookies: req.cookies, authz: req.headers.authorization }, "preHandler start");
 
-    try {
-      req.auth = app.verifyAuthToken(token);
-    } catch {
-      // ignore invalid token (optional auth behavior)
-      req.auth = undefined;
-    }
-  });
+      const token = app.getAuthToken(req);
+      req.log.info({ hasToken: !!token }, "token extracted");
+
+      if (!token) return;
+
+      try {
+        req.auth = app.verifyAuthToken(token);
+        req.log.info({ auth: req.auth }, "token verified");
+      } catch (err) {
+        req.log.warn({ err }, "token invalid");
+        req.auth = undefined;
+      }
+    });
+    
+
+    // app.addHook("onResponse", async (req) => {
+    //   req.log.info({ statusCode: req.body }, "response finished");
+    // });
+
 });

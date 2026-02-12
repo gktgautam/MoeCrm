@@ -1,5 +1,7 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import cors from "@fastify/cors";
+
 import cookie from "@fastify/cookie";
 
 import swaggerPlugin from "./plugins/swagger.js";
@@ -18,8 +20,26 @@ export async function buildApp(): Promise<FastifyInstance> {
   // --- Core plugins (before routes) ---
   await app.register(swaggerPlugin);
 
+  // CORS MUST be before routes
+  await app.register(cors, {
+    origin: (origin, cb) => {
+      // allow non-browser clients (curl/postman) where origin is undefined
+      if (!origin) return cb(null, true);
+
+      const allowlist = new Set([
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+      ]);
+
+      cb(null, allowlist.has(origin));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  });
+
   await app.register(cookie, {
-    secret: env.COOKIE_SECRET, // ok even if undefined (only needed for signed cookies)
+    secret: env.COOKIE_SECRET,
     hook: "onRequest",
     parseOptions: {
       httpOnly: true,
