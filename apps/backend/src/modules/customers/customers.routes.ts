@@ -1,10 +1,11 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
-import { requireAuth, requireRole } from "../auth/auth.guard.js";
+import { requireAuth, requireOrgAccess, requireRole } from "../auth/auth.guard.js";
 import { fetchCustomersUpdatedAfter, upsertContactsFromCrm } from "./customers.repo.js";
+import { resolveOrgIdFromRequest } from "../auth/org-access.js";
 
 const BodySchema = Type.Object({
-  orgId: Type.Integer({ minimum: 1 }),
+  orgId: Type.Optional(Type.Integer({ minimum: 1 })),
   updatedAfter: Type.Optional(Type.String({ format: "date-time" })),
 });
 
@@ -20,7 +21,7 @@ const ErrorSchema = Type.Object({
 });
 
 const routes: FastifyPluginAsync = async (app) => {
-  app.post<{ Body: { orgId: number; updatedAfter?: string } }>("/customers/sync", {
+  app.post<{ Body: { orgId?: number; updatedAfter?: string } }>("/customers/sync", {
     schema: {
       tags: ["customers"],
       security: [{ cookieAuth: [] }],
@@ -30,13 +31,18 @@ const routes: FastifyPluginAsync = async (app) => {
         400: ErrorSchema,
       },
     },
-    preHandler: [requireAuth, requireRole(["owner", "admin", "manager"])],
+    preHandler: [
+      requireAuth,
+      requireRole(["owner", "admin", "manager"]),
+      requireOrgAccess({ source: "body" }),
+    ],
     handler: async (req, reply) => {
       if (req.body.updatedAfter && Number.isNaN(Date.parse(req.body.updatedAfter))) {
         return reply.code(400).send({ ok: false as const, error: "INVALID_UPDATED_AFTER" });
       }
 
-      const rows = await fetchCustomersUpdatedAfter(app.dbCrm, req.body.orgId, req.body.updatedAfter);
+      const orgId = resolveOrgIdFromRequest(req, { source: "body" });
+      const rows = await fetchCustomersUpdatedAfter(app.dbCrm, orgId, req.body.updatedAfter);
       const upserted = await upsertContactsFromCrm(app.dbEngage, rows);
 
       return { ok: true as const, fetched: rows.length, upserted };

@@ -27,11 +27,11 @@ export default function PermissionGate({
 
   const perms = state.permissions ?? [];
 
-const okAny =
-  !anyOf || anyOf.length === 0 ? true : anyOf.some((p) => hasPermission(perms, p));
+  const okAny =
+    !anyOf || anyOf.length === 0 ? true : anyOf.some((p) => hasPermission(perms, p));
 
-const okAll =
-  !allOf || allOf.length === 0 ? true : allOf.every((p) => hasPermission(perms, p));
+  const okAll =
+    !allOf || allOf.length === 0 ? true : allOf.every((p) => hasPermission(perms, p));
 
   return <>{okAny && okAll ? children : fallback}</>;
 }
