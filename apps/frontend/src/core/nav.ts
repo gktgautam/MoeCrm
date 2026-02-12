@@ -1,16 +1,10 @@
-// src/core/nav.ts
-import type { Role } from "@/features/auth/auth.types";
+import { APP_ROUTES } from "@/app/router/route-config";
 
 export type NavItem = {
   label: string;
   to: string;
-  roles: Role[];
 };
 
-export const NAV: NavItem[] = [
-  { label: "Dashboard", to: "/", roles: ["owner", "admin", "manager", "viewer"] },
-  { label: "Segments", to: "/segments", roles: ["owner", "admin", "manager"] },
-  { label: "Campaigns", to: "/campaigns", roles: ["owner", "admin", "manager"] },
-  { label: "Analytics", to: "/analytics", roles: ["owner", "admin", "manager", "viewer"] },
-  { label: "Settings", to: "/settings", roles: ["owner", "admin"] },
-];
+export const NAV: NavItem[] = APP_ROUTES.flatMap((route) =>
+  route.navLabel ? [{ label: route.navLabel, to: route.path }] : []
+);

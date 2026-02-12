@@ -11,6 +11,7 @@ import {
 import { api } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import type { AuthUser, MeResponse, Role } from "./auth.types";
+import { hasPermission } from "./perm";
 
 type LoginPayload = { orgId: number; email: string; password: string };
 
@@ -93,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasPerm = (perm: string) => {
     if (state.status !== "authed") return false;
-    return state.permissions.includes(perm);
+    return hasPermission(state.permissions, perm);
   };
 
   const value = useMemo<AuthContextValue>(
