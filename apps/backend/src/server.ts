@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { buildApp } from "./app.js";
-import { env } from "./config.env.js";
+import { env } from "@/env";
 
 async function start() {
   const app = await buildApp(); // ✅ build once
@@ -20,7 +20,7 @@ async function start() {
   process.on("SIGINT", () => void shutdown("SIGINT"));
 
   try {
-    const address = await app.listen({ port: env.port, host: env.host });
+    const address = await app.listen({ port: env.PORT, host: env.HOST });
     app.log.info({ address }, "🚀 Server listening");
   } catch (err: any) {
     // If DB plugin throws during startup, it lands here and process exits.

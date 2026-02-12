@@ -1,7 +1,7 @@
 import fp from "fastify-plugin";
 import jwt from "@fastify/jwt";
 import type { FastifyReply } from "fastify";
-import { env } from "../config.env.js";
+import { env } from "@/env";
 
 export type AuthTokenPayload = {
   sub: string;
@@ -24,7 +24,7 @@ declare module "fastify" {
 const AUTH_COOKIE_NAME = "ee_auth";
 
 export default fp(async (app) => {
-  await app.register(jwt, { secret: env.jwtSecret });
+  await app.register(jwt, { secret: env.JWT_SECRET });
 
   app.decorate("signAuthToken", (payload: AuthTokenPayload) => {
     return app.jwt.sign(payload, { expiresIn: "7d" });
@@ -35,7 +35,7 @@ export default fp(async (app) => {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
-      secure: env.isProd,
+      secure: env.ISPROD,
       maxAge: 60 * 60 * 24 * 7,
     });
   });

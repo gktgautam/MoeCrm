@@ -2,6 +2,7 @@
 import fp from "fastify-plugin";
 import { Pool } from "pg";
 import { connectWithRetry } from "./_db.retry.js";
+import { env } from "@/env";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -10,7 +11,7 @@ declare module "fastify" {
 }
 
 export default fp(async (app) => {
-  const url = process.env.CRM_DB_URL;
+  const url = env.CRM_DB_URL;
   if (!url) throw new Error("Missing CRM_DB_URL");
 
   const pool = new Pool({ connectionString: url });
@@ -29,8 +30,8 @@ export default fp(async (app) => {
   app.addHook("onReady", async () => {
     await connectWithRetry(app, healthCheck, {
       name: "crm-db",
-      maxAttempts: Number(process.env.DB_CONNECT_ATTEMPTS ?? 5),
-      delayMs: Number(process.env.DB_CONNECT_DELAY_MS ?? 800),
+      maxAttempts: Number(env.DB_CONNECT_ATTEMPTS ?? 5),
+      delayMs: Number(env.DB_CONNECT_DELAY_MS ?? 800),
     });
   });
 
