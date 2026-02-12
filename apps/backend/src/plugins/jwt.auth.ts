@@ -1,3 +1,4 @@
+// src/plugins/jwt.auth.ts
 import fp from "fastify-plugin";
 import jwt from "@fastify/jwt";
 import type { FastifyReply } from "fastify";
@@ -16,8 +17,20 @@ declare module "fastify" {
 
   interface FastifyInstance {
     signAuthToken(payload: AuthTokenPayload): string;
+    verifyAuthToken(token: string): AuthTokenPayload;
+
     setAuthCookie(reply: FastifyReply, token: string): void;
     clearAuthCookie(reply: FastifyReply): void;
+
+    getAuthToken(req: any): string | null;
+  }
+}
+
+// Optional but best TS DX if you use req.jwtVerify() later
+declare module "@fastify/jwt" {
+  interface FastifyJWT {
+    payload: AuthTokenPayload;
+    user: AuthTokenPayload;
   }
 }
 
@@ -28,6 +41,10 @@ export default fp(async (app) => {
 
   app.decorate("signAuthToken", (payload: AuthTokenPayload) => {
     return app.jwt.sign(payload, { expiresIn: "7d" });
+  });
+
+  app.decorate("verifyAuthToken", (token: string) => {
+    return app.jwt.verify<AuthTokenPayload>(token);
   });
 
   app.decorate("setAuthCookie", (reply: FastifyReply, token: string) => {
@@ -44,14 +61,30 @@ export default fp(async (app) => {
     reply.clearCookie(AUTH_COOKIE_NAME, { path: "/" });
   });
 
+  // ✅ One function to get token from cookie OR header
+  app.decorate("getAuthToken", (req: any): string | null => {
+    const cookieToken = req.cookies?.[AUTH_COOKIE_NAME];
+    if (cookieToken) return cookieToken;
+
+    const auth = req.headers?.authorization;
+    if (typeof auth === "string" && auth.startsWith("Bearer ")) {
+      const token = auth.slice("Bearer ".length).trim();
+      return token.length ? token : null;
+    }
+
+    return null;
+  });
+
+  // ✅ Global optional auth: sets req.auth if token exists + valid
   app.addHook("preHandler", async (req) => {
-    const token = req.cookies[AUTH_COOKIE_NAME];
+    const token = app.getAuthToken(req);
     if (!token) return;
 
     try {
-      req.auth = app.jwt.verify<AuthTokenPayload>(token);
+      req.auth = app.verifyAuthToken(token);
     } catch {
-      // Intentionally ignore invalid cookie and rely on auth guard.
+      // ignore invalid token (optional auth behavior)
+      req.auth = undefined;
     }
   });
 });

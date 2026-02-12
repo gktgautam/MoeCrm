@@ -13,15 +13,13 @@ import { env } from "@/env";
 import { makeLoggerConfig } from "./lib/logger.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
-  // IMPORTANT: attach the TypeBox type provider here
-  const app = Fastify({ logger: makeLoggerConfig(env.ISPROD) })
-    .withTypeProvider<TypeBoxTypeProvider>();
+  const app = Fastify({ logger: makeLoggerConfig(env.ISPROD) }).withTypeProvider<TypeBoxTypeProvider>();;
 
-  // --- Core plugins ---
+  // --- Core plugins (before routes) ---
   await app.register(swaggerPlugin);
 
   await app.register(cookie, {
-    secret: env.COOKIE_SECRET,
+    secret: env.COOKIE_SECRET, // ok even if undefined (only needed for signed cookies)
     hook: "onRequest",
     parseOptions: {
       httpOnly: true,
@@ -33,7 +31,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(jwtAuthPlugin);
 
-  // --- DB plugins ---
+  // --- DB plugins (fail-fast if DB down) ---
   await app.register(dbCrmPlugin);
   await app.register(dbEngagePgPlugin);
   await app.register(dbEngageKnexPlugin);
@@ -41,7 +39,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   // --- Routes ---
   await app.register(routes);
 
-  // --- Error handler ---
+  // --- Central error handler ---
   app.setErrorHandler((err, req, reply) => {
     req.log.error({ err }, "Unhandled error");
 

@@ -1,62 +1,47 @@
 import argon2 from "argon2";
-import type { Pool } from "pg";
 
-export type AppUserRole = "owner" | "admin" | "manager" | "viewer";
-
-type AuthUserRow = {
-  id: number;
-  org_id: number;
-  email: string;
-  password_hash: string | null;
-  role: AppUserRole;
-  status: "invited" | "active" | "disabled";
-};
-
-export async function createAppUser(params: {
-  db: Pool;
+export async function createAppUser(args: {
+  db: any;
   orgId: number;
   email: string;
   password: string;
-  role?: AppUserRole;
+  role?: "owner" | "admin" | "manager" | "viewer";
 }) {
-  const role = params.role ?? "owner";
-  const passwordHash = await argon2.hash(params.password);
+  const passwordHash = await argon2.hash(args.password, {
+    type: argon2.argon2id,      // best variant
+    memoryCost: 19456,         // ~19MB (safe default)
+    timeCost: 2,
+    parallelism: 1,
+  });
 
-  const { rows } = await params.db.query<Pick<AuthUserRow, "id" | "org_id" | "email" | "role" | "status">>(
+  const res = await args.db.query(
     `
-      insert into app_users (org_id, email, password_hash, status, role, auth_provider)
-      values ($1, $2, $3, 'active', $4, 'password')
-      returning id, org_id, email, role, status
+      insert into app_users (org_id, email, password_hash, role)
+      values ($1, $2, $3, coalesce($4, 'owner'))
+      returning id, org_id, email, role
     `,
-    [params.orgId, params.email, passwordHash, role],
+    [args.orgId, args.email.toLowerCase(), passwordHash, args.role ?? null]
   );
 
-  return rows[0];
+  return res.rows[0];
 }
 
-export async function verifyLogin(params: {
-  db: Pool;
+export async function verifyLogin(args: {
+  db: any;
   orgId: number;
   email: string;
   password: string;
 }) {
-  const { rows } = await params.db.query<AuthUserRow>(
-    `
-      select id, org_id, email, password_hash, role, status
-      from app_users
-      where org_id = $1 and lower(email) = lower($2)
-        and deleted_at is null
-      limit 1
-    `,
-    [params.orgId, params.email],
+  const res = await args.db.query(
+    `select id, org_id, email, role, password_hash from app_users where org_id = $1 and email = $2 limit 1`,
+    [args.orgId, args.email.toLowerCase()]
   );
 
-  const user = rows[0];
-  if (!user || user.status !== "active" || !user.password_hash) return null;
+  const user = res.rows[0];
+  if (!user) return null;
 
-  const isValid = await argon2.verify(user.password_hash, params.password);
-  if (!isValid) return null;
+  const ok = await argon2.verify(user.password_hash, args.password);
+  if (!ok) return null;
 
-  void params.db.query(`update app_users set last_login_at = now() where id = $1`, [user.id]);
-  return user;
+  return { id: user.id, org_id: user.org_id, email: user.email, role: user.role };
 }

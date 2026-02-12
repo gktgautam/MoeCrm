@@ -9,7 +9,9 @@
     "start": "NODE_ENV=production DB_RETRY_ENABLED=true node dist/server.js",
     "engage:migrate": "NODE_OPTIONS='-r dotenv/config' npx knex --knexfile src/db/knexfile.engage.cjs migrate:latest",
     "engage:rollback": "NODE_OPTIONS='-r dotenv/config' npx knex --knexfile src/db/knexfile.engage.cjs migrate:rollback",
-    "engage:seed": "NODE_OPTIONS=\"-r dotenv/config\" npx knex --knexfile src/db/knexfile.engage.cjs seed:run"
+    "engage:seed": "NODE_OPTIONS=\"-r dotenv/config\" npx knex --knexfile src/db/knexfile.engage.cjs seed:run",
+
+    "export:openapi": "tsx scripts/export-openapi.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
