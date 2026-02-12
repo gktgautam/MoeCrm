@@ -1,25 +1,21 @@
-// api.ts
+// src/lib/api.ts
 import axios from "axios";
-import { queryClient } from "./queryClient";
 import { config } from "@/config";
+import { queryClient } from "@/lib/queryClient";
 
 export const api = axios.create({
-  baseURL: config.apiUrl,
-  withCredentials: true,  
+  baseURL: config.apiUrl,      // ✅ http://localhost:8080/api
+  withCredentials: true,       // ✅ send cookies (ee_auth)
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT_MS ?? 15000),
 });
- 
-// ✅ GLOBAL 401 HANDLER (cookie expired, invalid, logged out, etc.)
+
+// ✅ global 401 handler
 api.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Clear React Query cache
+    if (error?.response?.status === 401) {
       queryClient.clear();
-
-      // Tell AuthProvider to clear user state
       window.dispatchEvent(new Event("auth:logout"));
-
-      // Redirect to login page (avoid loops)
       if (!window.location.pathname.includes("/login")) {
         window.location.href = "/login";
       }
