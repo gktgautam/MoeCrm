@@ -3,6 +3,7 @@ import type { SignupBody, LoginBody } from "./auth.schemas.js";
 import { fetchPermissionsForRole } from "./auth.permissions.js";
 import { resolveAllowedRoutes } from "./auth.route-access.js";
 import { createAppUser, verifyLogin } from "./auth.service.js";
+import { AppError } from "@/core/http/error-handling";
 export const authController = {
   signup: async (req: FastifyRequest<{ Body: SignupBody }>, reply: FastifyReply) => {
     try {
@@ -25,45 +26,41 @@ export const authController = {
     } catch (error) {
       const err = error as { code?: string };
       if (err.code === "23505") {
-        return reply.code(409).send({ ok: false, error: "EMAIL_EXISTS" });
+        throw new AppError({ statusCode: 409, code: "EMAIL_EXISTS", message: "Email already exists" });
       }
-      req.log.error({ err: error }, "signup failed");
-      return reply.code(500).send({ ok: false, error: "SERVER_ERROR" });
+      throw error;
     }
   },
 
   login: async (req: FastifyRequest<{ Body: LoginBody }>, reply: FastifyReply) => {
-    try {
-      const { email, password } = req.body;
-      const orgId = 1; // default
-      const user = await verifyLogin({
-        db: req.server.dbEngage,
-        orgId,
-        email,
-        password,
-      });
+    const { email, password } = req.body;
+    const orgId = 1; // default
+    const user = await verifyLogin({
+      db: req.server.dbEngage,
+      orgId,
+      email,
+      password,
+    });
 
-      if (!user) {
-        return reply.code(401).send({ ok: false, error: "INVALID_CREDENTIALS" });
-      }
-
-      const token = req.server.signAuthToken({
-        sub: String(user.id),
-        orgId: String(user.org_id),
-        role: user.role,
-      });
-      req.server.setAuthCookie(reply, token);
-
-      return reply.code(200).send({ ok: true, token });
-    } catch (err) {
-      req.log.error({ err }, "login failed");
-      return reply.code(500).send({ ok: false, error: "SERVER_ERROR" });
+    if (!user) {
+      throw new AppError({ statusCode: 401, code: "INVALID_CREDENTIALS", message: "Invalid email or password" });
     }
+
+    const token = req.server.signAuthToken({
+      sub: String(user.id),
+      orgId: String(user.org_id),
+      role: user.role,
+    });
+    req.server.setAuthCookie(reply, token);
+
+    return reply.code(200).send({ ok: true, token });
   },
 
 
   me: async (req: FastifyRequest, reply: FastifyReply) => {
-    if (!req.auth) return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+    if (!req.auth) {
+      throw new AppError({ statusCode: 401, code: "UNAUTHORIZED", message: "Authentication required" });
+    }
     const userId = Number(req.auth.sub);
     const orgId = Number(req.auth.orgId);
 
@@ -78,7 +75,9 @@ export const authController = {
     );
 
     const user = rows[0];
-    if (!user) return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+    if (!user) {
+      throw new AppError({ statusCode: 401, code: "UNAUTHORIZED", message: "Authentication required" });
+    }
 
     const permissions = await fetchPermissionsForRole(req.server, user.role);
     const allowedRoutes = resolveAllowedRoutes(permissions);

@@ -1,6 +1,7 @@
 // src/modules/auth/auth.schemas.ts
 import { Type, type Static } from "@sinclair/typebox";
 import { APP_ROLES } from "./auth.types.js";
+import { apiErrorSchema } from "@/core/http/error-handling";
 
 /**
  * Auth schemas (TypeBox)
@@ -54,10 +55,7 @@ export const OkResponse = Type.Object({
 export type TOkResponse = Static<typeof OkResponse>;
 
 /** Generic error response */
-export const ErrorResponse = Type.Object({
-  ok: Type.Literal(false),
-  error: Type.String(),
-});
+export const ErrorResponse = apiErrorSchema;
 export type TErrorResponse = Static<typeof ErrorResponse>;
 
 // -----------------------------

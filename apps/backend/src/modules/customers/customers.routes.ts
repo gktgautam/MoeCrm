@@ -3,6 +3,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard.js";
 import { resolveOrgIdFromRequest } from "../auth/org-access.js";
 import { syncCustomersFromCrm } from "./customers.service.js";
+import { AppError, apiErrorSchema } from "@/core/http/error-handling";
 
 const BodySchema = Type.Object({
   orgId: Type.Optional(Type.Integer({ minimum: 1 })),
@@ -15,11 +16,6 @@ const ResponseSchema = Type.Object({
   upserted: Type.Integer(),
 });
 
-const ErrorSchema = Type.Object({
-  ok: Type.Literal(false),
-  error: Type.String(),
-});
-
 const routes: FastifyPluginAsync = async (app) => {
   app.post<{ Body: { orgId?: number; updatedAfter?: string } }>("/sync", {
     schema: {
@@ -28,7 +24,7 @@ const routes: FastifyPluginAsync = async (app) => {
       body: BodySchema,
       response: {
         200: ResponseSchema,
-        400: ErrorSchema,
+        400: apiErrorSchema,
       },
     },
     preHandler: [
@@ -38,7 +34,11 @@ const routes: FastifyPluginAsync = async (app) => {
     ],
     handler: async (req, reply) => {
       if (req.body.updatedAfter && Number.isNaN(Date.parse(req.body.updatedAfter))) {
-        return reply.code(400).send({ ok: false as const, error: "INVALID_UPDATED_AFTER" });
+        throw new AppError({
+          statusCode: 400,
+          code: "INVALID_UPDATED_AFTER",
+          message: "updatedAfter must be a valid ISO date-time string",
+        });
       }
 
       const orgId = resolveOrgIdFromRequest(req, { source: "body" });

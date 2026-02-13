@@ -7,6 +7,7 @@ import {
   type PermissionRequirement,
 } from "./auth.permissions.js";
 import { resolveOrgIdFromRequest } from "./org-access.js";
+import { AppError } from "@/core/http/error-handling";
 
 async function getRequestPermissions(req: any): Promise<string[]> {
   if (!req.auth) return [];
@@ -18,7 +19,7 @@ async function getRequestPermissions(req: any): Promise<string[]> {
 
 export const requireAuth: preHandlerHookHandler = async (req, reply) => {
   if (!req.auth) {
-    return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+    throw new AppError({ statusCode: 401, code: "UNAUTHORIZED", message: "Authentication required" });
   }
   return;
 };
@@ -26,11 +27,11 @@ export const requireAuth: preHandlerHookHandler = async (req, reply) => {
 export function requireRole(roles: AuthTokenPayload["role"][]): preHandlerHookHandler {
   return async (req, reply) => {
     if (!req.auth) {
-      return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+      throw new AppError({ statusCode: 401, code: "UNAUTHORIZED", message: "Authentication required" });
     }
 
     if (!roles.includes(req.auth.role)) {
-      return reply.code(403).send({ ok: false, error: "FORBIDDEN" });
+      throw new AppError({ statusCode: 403, code: "FORBIDDEN", message: "Insufficient permissions" });
     }
 
     return;
@@ -40,7 +41,7 @@ export function requireRole(roles: AuthTokenPayload["role"][]): preHandlerHookHa
 export function requirePermission(requirement: PermissionRequirement): preHandlerHookHandler {
   return async (req, reply) => {
     if (!req.auth) {
-      return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+      throw new AppError({ statusCode: 401, code: "UNAUTHORIZED", message: "Authentication required" });
     }
 
     const permissions = await getRequestPermissions(req);
@@ -56,7 +57,7 @@ export function requirePermission(requirement: PermissionRequirement): preHandle
       requirement.allOf.every((permission) => permissionMatches(permissions, permission));
 
     if (!anyOk || !allOk) {
-      return reply.code(403).send({ ok: false, error: "FORBIDDEN" });
+      throw new AppError({ statusCode: 403, code: "FORBIDDEN", message: "Insufficient permissions" });
     }
 
     return;
@@ -70,7 +71,7 @@ export function requireOrgAccess(options: {
 }): preHandlerHookHandler {
   return async (req, reply) => {
     if (!req.auth) {
-      return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+      throw new AppError({ statusCode: 401, code: "UNAUTHORIZED", message: "Authentication required" });
     }
 
     try {
@@ -80,14 +81,14 @@ export function requireOrgAccess(options: {
       const code = error instanceof Error ? error.message : "FORBIDDEN";
 
       if (code === "INVALID_ORG_ID") {
-        return reply.code(400).send({ ok: false, error: code });
+        throw new AppError({ statusCode: 400, code: "BAD_REQUEST", message: "Invalid orgId in request" });
       }
 
       if (code === "UNAUTHORIZED") {
-        return reply.code(401).send({ ok: false, error: code });
+        throw new AppError({ statusCode: 401, code: "UNAUTHORIZED", message: "Authentication required" });
       }
 
-      return reply.code(403).send({ ok: false, error: "FORBIDDEN" });
+      throw new AppError({ statusCode: 403, code: "FORBIDDEN", message: "Cross-org access denied" });
     }
   };
 }

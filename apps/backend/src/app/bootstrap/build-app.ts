@@ -13,6 +13,7 @@ import dbEngageKnexPlugin from "@/core/plugins/db.engage.knex";
 import routes from "@/app/http/register-routes";
 import { env } from "@/core/config/env";
 import { makeLoggerConfig } from "@/core/logging/logger";
+import { makeApiErrorPayload, mapErrorToHttp } from "@/core/http/error-handling";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: makeLoggerConfig(env.ISPROD) }).withTypeProvider<TypeBoxTypeProvider>();
@@ -59,19 +60,50 @@ export async function buildApp(): Promise<FastifyInstance> {
   // --- Routes ---
   await app.register(routes);
 
+  app.setNotFoundHandler((req, reply) => {
+    return reply.code(404).send(
+      makeApiErrorPayload(req.id, {
+        code: "NOT_FOUND",
+        message: `Route not found: ${req.method} ${req.url}`,
+      }),
+    );
+  });
+
+  app.addHook("onResponse", async (req, reply) => {
+    req.log.info(
+      {
+        requestId: req.id,
+        method: req.method,
+        path: req.routeOptions.url,
+        url: req.url,
+        statusCode: reply.statusCode,
+        responseTimeMs: reply.elapsedTime,
+      },
+      "request completed",
+    );
+  });
+
   // --- Central error handler ---
   app.setErrorHandler((err, req, reply) => {
-    req.log.error({ err }, "Unhandled error");
+    const mapped = mapErrorToHttp(err, req);
 
-    const statusCode = (err as any)?.statusCode;
-    if (statusCode && statusCode >= 400 && statusCode < 600) {
-      return reply.code(statusCode).send({
-        ok: false,
-        error: statusCode === 400 ? "BAD_REQUEST" : "REQUEST_ERROR",
-      });
+    const logger = mapped.level === "error" ? req.log.error.bind(req.log) : req.log.warn.bind(req.log);
+    logger(
+      {
+        err,
+        requestId: req.id,
+        method: req.method,
+        url: req.url,
+        statusCode: mapped.statusCode,
+      },
+      "request failed",
+    );
+
+    if (reply.sent) {
+      return;
     }
 
-    return reply.code(500).send({ ok: false, error: "SERVER_ERROR" });
+    return reply.code(mapped.statusCode).send(mapped.payload);
   });
 
   return app;

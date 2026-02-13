@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
+import { AppError } from "@/core/http/error-handling";
 
 const healthRoutes: FastifyPluginAsync = async (app) => {
   app.get("/health", async () => ({ ok: true }));
@@ -10,7 +11,7 @@ const healthRoutes: FastifyPluginAsync = async (app) => {
       return { ok: true, crm: crm.rows[0]?.ok === 1, engage: engage.rows[0]?.ok === 1 };
     } catch (err) {
       app.log.error({ err }, "DB health failed");
-      return reply.code(500).send({ ok: false });
+      throw new AppError({ statusCode: 503, code: "SERVICE_UNAVAILABLE", message: "Database health check failed" });
     }
   });
 };
