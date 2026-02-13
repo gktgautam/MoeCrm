@@ -1,7 +1,6 @@
-// src/features/auth/PermissionGate.tsx
+// src/core/rbac/PermissionGate.tsx
 import React from "react";
-import { useAuth } from "./useAuth";
-import { hasPermission } from "./perm";
+import { hasPermission, useAuth } from "@/features/auth";
 /**
  * PermissionGate
  * UI show/hide based on `permissions[]` from GET /auth/me.

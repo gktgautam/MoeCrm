@@ -1,5 +1,4 @@
-import type { Role } from "./auth.types";
-import { hasPermission } from "./perm";
+import { hasPermission, type Role } from "@/features/auth";
 
 export type AccessRule = {
   roles?: Role[];

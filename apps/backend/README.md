@@ -1,5 +1,38 @@
 # Backend API Standards
 
+## Architecture and placement rules
+
+`apps/backend/src` is organized by responsibility:
+
+- `app/`: app bootstrap and HTTP composition (wiring only).
+- `core/`: platform/cross-cutting code (config, plugins, logging, global HTTP error handling).
+- `modules/`: domain/business modules.
+- `shared/`: pure helpers only.
+- `types/`: ambient/global type declarations.
+
+DB migration assets are outside `src` in `apps/backend/db`.
+
+### Dependency boundaries (enforced)
+
+- `src/core` **MUST NOT** import from `src/modules`.
+- `src/shared` **MUST NOT** import from `src/core` or `src/modules`.
+- `src/modules` **MAY** import from `src/core` and `src/shared`.
+
+### File naming conventions
+
+- Routes: `*.routes.ts`
+- Controllers: `*.controller.ts`
+- Services: `*.service.ts`
+- Repositories (SQL/data access only): `*.repo.ts`
+- Schemas: `*.schemas.ts`
+- Module/shared types: `*.types.ts`
+
+### Layer ownership
+
+- `*.routes.ts` / `*.controller.ts`: HTTP concerns.
+- `*.service.ts`: business logic and orchestration.
+- `*.repo.ts`: SQL/data access only.
+
 ## Response contract
 
 All endpoints must return one of these shapes:
@@ -45,18 +78,6 @@ All endpoints must return one of these shapes:
 ## Throwing errors
 
 Use `Errors.*` helpers from `src/core/http/app-error.ts`.
-
-```ts
-import { Errors } from "@/core/http/app-error";
-
-if (!req.auth) {
-  throw Errors.unauthorized();
-}
-
-if (!canAccessOrg) {
-  throw Errors.forbidden("Missing permission: customers:sync");
-}
-```
 
 Rules:
 

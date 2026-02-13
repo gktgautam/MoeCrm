@@ -1,73 +1,53 @@
-# React + TypeScript + Vite
+# Frontend Architecture Standards
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Structure
 
-Currently, two official plugins are available:
+`apps/frontend/src` is organized as:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `app/`: top-level composition (providers, layouts, router, app-level guards/pages/config).
+- `core/`: cross-cutting app infrastructure (API client, RBAC primitives, layout/navigation shell).
+- `features/`: domain-first product features.
+- `shared/`: reusable primitives only (UI atoms, generic hooks/utils/types).
 
-## React Compiler
+## Routing and ownership rules
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+- `app/router` defines route composition.
+- Features expose route entries via `*.routes.tsx` and are consumed by app router wiring.
+- Route guards live in `app/guards` (e.g. `ProtectedRoute`).
+- Global pages live in `app/pages` (e.g. `NotFound`, `Unauthorized`).
 
-## Expanding the ESLint configuration
+## RBAC rules
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- RBAC primitives (`PermissionGate`, `RoleGate`, access rules) live in `core/rbac`.
+- Feature auth state/hooks stay in `features/auth`.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Layout/navigation rules
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- App shell navigation belongs to `core/layout`.
+- Do not place navigation under `shared`.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## API rules
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Shared HTTP client and query client belong in `core/api`.
+- Domain API wrappers should follow `*.api.ts` under corresponding feature folders when added.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Dependency boundaries
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Features should not import other features directly.
+- Prefer sharing through `core/*` or `shared/*`.
+- `shared/*` should remain framework-agnostic/reusable and avoid feature/business coupling.
+
+## Naming conventions
+
+- Feature routes: `*.routes.tsx`
+- Feature/local types: `*.types.ts`
+- Domain API files: `*.api.ts`
+- Reusable visual units in feature folders: `components/*`
+- Feature entry pages in feature folders: `pages/*`
+
+## Where to place new code
+
+- New business UI flow: `features/<domain>/...`
+- Global route/layout wiring: `app/router` and `app/layouts`
+- Cross-feature infra/API/RBAC/navigation: `core/*`
+- Truly generic reusable pieces: `shared/*`
