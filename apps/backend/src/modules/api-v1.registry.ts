@@ -1,7 +1,7 @@
-import authRoutes from "@/modules/auth/auth.routes";
-import customersRoutes from "@/modules/customers/customers.routes";
-import dashboardRoutes from "@/modules/dashboard/dashboard.routes";
-import usersRoutes from "@/modules/users/users.routes";
+import { authRoutes } from "@/modules/auth";
+import { customersRoutes } from "@/modules/customers";
+import { dashboardRoutes } from "@/modules/dashboard";
+import { usersRoutes } from "@/modules/users";
 import { defineModules } from "@/modules/module-registry";
 
 export const API_V1_MODULES = defineModules([

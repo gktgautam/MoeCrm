@@ -61,4 +61,6 @@ This repository now follows a **layered + feature-oriented monorepo layout** des
 ## Guardrails
 
 - Run `npm run check:structure` before opening PRs.
-- The check enforces that backend modules own route files and frontend features are folder-scoped with feature route ownership, preventing random top-level file dumping.
+- Public API boundary rule: import other features/modules via their root (`@/features/<name>`, `@/modules/<name>`) rather than deep file paths.
+- Each feature/module must expose an `index.ts` as a stable integration contract for team-safe refactors.
+- The check enforces folder ownership, index contracts, and import boundaries to prevent random top-level file dumping and hidden coupling.

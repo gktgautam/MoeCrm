@@ -1,16 +1,33 @@
-import { readdir, stat } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 
 const repoRoot = process.cwd();
-
 const checks = [];
 
-const fail = (message) => {
-  checks.push({ ok: false, message });
-};
+const fail = (message) => checks.push({ ok: false, message });
+const pass = (message) => checks.push({ ok: true, message });
 
-const pass = (message) => {
-  checks.push({ ok: true, message });
+const walkFiles = async (startDir, matcher) => {
+  const out = [];
+  const queue = [path.join(repoRoot, startDir)];
+
+  while (queue.length) {
+    const current = queue.pop();
+    const entries = await readdir(current);
+
+    for (const entry of entries) {
+      const full = path.join(current, entry);
+      const rel = path.relative(repoRoot, full);
+      const info = await stat(full);
+      if (info.isDirectory()) {
+        queue.push(full);
+      } else if (!matcher || matcher(rel)) {
+        out.push(rel);
+      }
+    }
+  }
+
+  return out;
 };
 
 const expectDirectoriesOnly = async (relativeDir, allowedFiles = []) => {
@@ -26,36 +43,103 @@ const expectDirectoriesOnly = async (relativeDir, allowedFiles = []) => {
   }
 };
 
-const expectFeatureRouteFiles = async () => {
+const expectFrontendFeatureContracts = async () => {
   const featuresDir = path.join(repoRoot, "apps/frontend/src/features");
-  const entries = await readdir(featuresDir);
+  const features = await readdir(featuresDir);
 
-  for (const feature of entries) {
+  for (const feature of features) {
     const featurePath = path.join(featuresDir, feature);
     if (!(await stat(featurePath)).isDirectory()) continue;
 
-    const featureEntries = await readdir(featurePath);
-    const routeFile = `${feature}.routes.tsx`;
+    const entries = await readdir(featurePath);
+    if (!entries.includes("index.ts")) {
+      fail(`feature ${feature} must expose a public API file index.ts`);
+    }
 
-    if (!featureEntries.includes("pages") && !featureEntries.includes(routeFile)) {
-      fail(`feature ${feature} should contain pages/ or ${routeFile}`);
+    if (feature !== "auth" && !entries.includes(`${feature}.routes.tsx`)) {
+      fail(`feature ${feature} must define ${feature}.routes.tsx`);
     }
   }
 };
 
-const expectBackendModuleRouteFiles = async () => {
+const expectBackendModuleContracts = async () => {
   const modulesDir = path.join(repoRoot, "apps/backend/src/modules");
-  const entries = await readdir(modulesDir);
+  const moduleEntries = await readdir(modulesDir);
 
-  for (const moduleName of entries) {
+  for (const moduleName of moduleEntries) {
     const modulePath = path.join(modulesDir, moduleName);
     if (!(await stat(modulePath)).isDirectory()) continue;
 
-    const moduleEntries = await readdir(modulePath);
-    const hasRoutes = moduleEntries.some((entry) => entry.endsWith(".routes.ts"));
+    const entries = await readdir(modulePath);
+    if (!entries.includes("index.ts")) {
+      fail(`backend module ${moduleName} must expose a public API file index.ts`);
+    }
 
+    const hasRoutes = entries.some((entry) => entry.endsWith(".routes.ts"));
     if (!hasRoutes) {
       fail(`backend module ${moduleName} should define at least one *.routes.ts file`);
+    }
+  }
+};
+
+const parseImportTargets = (source) => {
+  const targets = [];
+  const regex = /from\s+["']([^"']+)["']/g;
+  let m;
+  while ((m = regex.exec(source)) !== null) {
+    targets.push(m[1]);
+  }
+  return targets;
+};
+
+const enforceFrontendImportBoundaries = async () => {
+  const files = await walkFiles("apps/frontend/src", (rel) => rel.endsWith(".ts") || rel.endsWith(".tsx"));
+
+  for (const rel of files) {
+    const source = await readFile(path.join(repoRoot, rel), "utf8");
+    const imports = parseImportTargets(source);
+
+    const owner = rel.includes("apps/frontend/src/features/")
+      ? rel.split("apps/frontend/src/features/")[1].split("/")[0]
+      : null;
+
+    for (const target of imports) {
+      const match = target.match(/^@\/features\/([^/]+)\/(.+)$/);
+      if (!match) continue;
+
+      const [, targetFeature] = match;
+      const importingInsideSameFeature = owner !== null && owner === targetFeature;
+      const importingFeatureRoot = rel === `apps/frontend/src/features/${targetFeature}/index.ts`;
+
+      if (!importingInsideSameFeature && !importingFeatureRoot) {
+        fail(`${rel} must import feature ${targetFeature} via @/features/${targetFeature} (public API), not deep path ${target}`);
+      }
+    }
+  }
+};
+
+const enforceBackendImportBoundaries = async () => {
+  const files = await walkFiles("apps/backend/src", (rel) => rel.endsWith(".ts"));
+
+  for (const rel of files) {
+    const source = await readFile(path.join(repoRoot, rel), "utf8");
+    const imports = parseImportTargets(source);
+
+    const owner = rel.includes("apps/backend/src/modules/")
+      ? rel.split("apps/backend/src/modules/")[1].split("/")[0]
+      : null;
+
+    for (const target of imports) {
+      const match = target.match(/^@\/modules\/([^/]+)\/(.+)$/);
+      if (!match) continue;
+      const [, targetModule] = match;
+
+      const importingInsideSameModule = owner !== null && owner === targetModule;
+      const importingModuleRoot = rel === `apps/backend/src/modules/${targetModule}/index.ts`;
+
+      if (!importingInsideSameModule && !importingModuleRoot) {
+        fail(`${rel} must import module ${targetModule} via @/modules/${targetModule} (public API), not deep path ${target}`);
+      }
     }
   }
 };
@@ -67,8 +151,10 @@ await expectDirectoriesOnly("apps/backend/src/modules", [
   "module-registry.ts",
   "public.registry.ts",
 ]);
-await expectFeatureRouteFiles();
-await expectBackendModuleRouteFiles();
+await expectFrontendFeatureContracts();
+await expectBackendModuleContracts();
+await enforceFrontendImportBoundaries();
+await enforceBackendImportBoundaries();
 
 if (checks.every((check) => check.ok)) {
   pass("structure checks passed");
@@ -79,6 +165,4 @@ for (const check of checks) {
   console.log(`${label} ${check.message}`);
 }
 
-if (checks.some((check) => !check.ok)) {
-  process.exit(1);
-}
+if (checks.some((check) => !check.ok)) process.exit(1);

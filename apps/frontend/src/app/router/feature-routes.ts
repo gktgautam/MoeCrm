@@ -1,9 +1,9 @@
 import type { AppRoute } from "@/app/router/route.types";
-import { ANALYTICS_ROUTES } from "@/features/analytics/analytics.routes";
-import { CAMPAIGNS_ROUTES } from "@/features/campaigns/campaigns.routes";
-import { DASHBOARD_ROUTES } from "@/features/dashboard/dashboard.routes";
-import { SEGMENTS_ROUTES } from "@/features/segments/segments.routes";
-import { SETTINGS_ROUTES } from "@/features/settings/settings.routes";
+import { ANALYTICS_ROUTES } from "@/features/analytics";
+import { CAMPAIGNS_ROUTES } from "@/features/campaigns";
+import { DASHBOARD_ROUTES } from "@/features/dashboard";
+import { SEGMENTS_ROUTES } from "@/features/segments";
+import { SETTINGS_ROUTES } from "@/features/settings";
 
 const defineFeatureRoutes = (routes: AppRoute[]) => {
   const seenPath = new Set<string>();

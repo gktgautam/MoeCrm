@@ -1,4 +1,4 @@
-import healthRoutes from "@/modules/health/health.routes";
+import { healthRoutes } from "@/modules/health";
 import { defineModules } from "@/modules/module-registry";
 
 export const PUBLIC_MODULES = defineModules([

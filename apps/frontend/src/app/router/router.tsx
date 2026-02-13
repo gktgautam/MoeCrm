@@ -3,8 +3,8 @@ import { createBrowserRouter } from "react-router-dom";
 import AuthLayout from "@/app/layouts/AuthLayout";
 import AppShell from "@/app/layouts/AppShell";
 
-import ProtectedRoute from "@/features/auth/ProtectedRoute";
-import LoginPage from "@/features/auth/pages/LoginPage";
+import { ProtectedRoute } from "@/features/auth";
+import { LoginPage } from "@/features/auth";
 
 import NotFound from "@/pages/NotFound";
 import Unauthorized from "@/pages/Unauthorized";

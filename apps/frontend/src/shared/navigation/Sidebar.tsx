@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { NAV } from "@/shared/navigation/nav";
-import { useAuth } from "@/features/auth/useAuth";
+import { useAuth } from "@/features/auth";
 
 export default function Sidebar() {
   const { state } = useAuth();

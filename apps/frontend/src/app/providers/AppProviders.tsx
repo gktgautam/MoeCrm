@@ -6,7 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 
 import { theme } from "./theme";
 import { queryClient } from "@/shared/api/queryClient";
-import { AuthProvider } from "@/features/auth/AuthProvider";
+import { AuthProvider } from "@/features/auth";
 
 export default function AppProviders({ children }: { children: ReactNode }) {
   return (

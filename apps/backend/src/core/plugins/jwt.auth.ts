@@ -2,7 +2,7 @@ import fp from "fastify-plugin";
 import jwt from "@fastify/jwt";
 import type { FastifyReply } from "fastify";
 import { env } from "@/core/config/env";
-import type { AppRole } from "@/modules/auth/auth.types";
+import type { AppRole } from "@/modules/auth";
 
 export type AuthTokenPayload = {
   sub: string;
