@@ -14,7 +14,7 @@ export type AuthContextValue = {
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
   hasRole: (roles: Role[]) => boolean;
-  hasPerm: (perm: string) => boolean;
+  hasRequiredPermission: (permission: string) => boolean;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);

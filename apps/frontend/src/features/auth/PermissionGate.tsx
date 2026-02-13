@@ -1,7 +1,7 @@
 // src/features/auth/PermissionGate.tsx
 import React from "react";
 import { useAuth } from "./useAuth";
-import { hasPermission } from "./perm";
+import { hasPermission } from "./permission-utils";
 /**
  * PermissionGate
  * UI show/hide based on `permissions[]` from GET /auth/me.
@@ -25,13 +25,13 @@ export default function PermissionGate({
 
   if (state.status !== "authed") return <>{fallback}</>;
 
-  const perms = state.permissions ?? [];
+  const userPermissions = state.permissions ?? [];
 
   const okAny =
-    !anyOf || anyOf.length === 0 ? true : anyOf.some((p) => hasPermission(perms, p));
+    !anyOf || anyOf.length === 0 ? true : anyOf.some((p) => hasPermission(userPermissions, p));
 
   const okAll =
-    !allOf || allOf.length === 0 ? true : allOf.every((p) => hasPermission(perms, p));
+    !allOf || allOf.length === 0 ? true : allOf.every((p) => hasPermission(userPermissions, p));
 
   return <>{okAny && okAll ? children : fallback}</>;
 }

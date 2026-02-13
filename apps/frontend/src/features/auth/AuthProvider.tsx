@@ -8,7 +8,7 @@ import {
 import { api } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import type { MeResponse, Role } from "./auth.types";
-import { hasPermission } from "./perm";
+import { hasPermission } from "./permission-utils";
 import { AuthContext, type AuthContextValue, type AuthState, type LoginPayload } from "./auth.context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -73,17 +73,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [state]
   );
 
-  const hasPerm = useCallback(
-    (perm: string) => {
+  const hasRequiredPermission = useCallback(
+    (permission: string) => {
       if (state.status !== "authed") return false;
-      return hasPermission(state.permissions, perm);
+      return hasPermission(state.permissions, permission);
     },
     [state]
   );
 
   const value = useMemo<AuthContextValue>(
-    () => ({ state, login, logout, refreshMe, hasRole, hasPerm }),
-    [state, login, logout, refreshMe, hasRole, hasPerm]
+    () => ({ state, login, logout, refreshMe, hasRole, hasRequiredPermission }),
+    [state, login, logout, refreshMe, hasRole, hasRequiredPermission]
   );
 
   if (state.status === "loading") {

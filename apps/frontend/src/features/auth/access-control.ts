@@ -1,5 +1,5 @@
 import type { Role } from "./auth.types";
-import { hasPermission } from "./perm";
+import { hasPermission } from "./permission-utils";
 
 export type AccessRule = {
   roles?: Role[];
@@ -12,6 +12,9 @@ export type AuthSnapshot =
   | { status: "guest" }
   | { status: "authed"; role: Role; permissions: string[] };
 
+/**
+ * Evaluates whether the current auth snapshot can satisfy the provided access rule.
+ */
 export function canAccess(snapshot: AuthSnapshot, rule?: AccessRule) {
   if (!rule) return snapshot.status === "authed";
   if (snapshot.status !== "authed") return false;
