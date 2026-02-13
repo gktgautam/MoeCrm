@@ -1,4 +1,5 @@
 import type { preHandlerHookHandler } from "fastify";
+import { Errors } from "@/core/http/app-error";
 import type { AuthTokenPayload } from "@/core/plugins/jwt.auth";
 import type { AppRole } from "./auth.types.js";
 import {
@@ -16,31 +17,28 @@ async function getRequestPermissions(req: any): Promise<string[]> {
   return req.authPermissions;
 }
 
-export const requireAuth: preHandlerHookHandler = async (req, reply) => {
+export const requireAuth: preHandlerHookHandler = async (req) => {
   if (!req.auth) {
-    return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+    throw Errors.unauthorized();
   }
-  return;
 };
 
 export function requireRole(roles: AuthTokenPayload["role"][]): preHandlerHookHandler {
-  return async (req, reply) => {
+  return async (req) => {
     if (!req.auth) {
-      return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+      throw Errors.unauthorized();
     }
 
     if (!roles.includes(req.auth.role)) {
-      return reply.code(403).send({ ok: false, error: "FORBIDDEN" });
+      throw Errors.forbidden();
     }
-
-    return;
   };
 }
 
 export function requirePermission(requirement: PermissionRequirement): preHandlerHookHandler {
-  return async (req, reply) => {
+  return async (req) => {
     if (!req.auth) {
-      return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+      throw Errors.unauthorized();
     }
 
     const permissions = await getRequestPermissions(req);
@@ -56,10 +54,8 @@ export function requirePermission(requirement: PermissionRequirement): preHandle
       requirement.allOf.every((permission) => permissionMatches(permissions, permission));
 
     if (!anyOk || !allOk) {
-      return reply.code(403).send({ ok: false, error: "FORBIDDEN" });
+      throw Errors.forbidden();
     }
-
-    return;
   };
 }
 
@@ -68,26 +64,11 @@ export function requireOrgAccess(options: {
   key?: string;
   allowCrossOrgRoles?: readonly AppRole[];
 }): preHandlerHookHandler {
-  return async (req, reply) => {
+  return async (req) => {
     if (!req.auth) {
-      return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+      throw Errors.unauthorized();
     }
 
-    try {
-      resolveOrgIdFromRequest(req, options);
-      return;
-    } catch (error) {
-      const code = error instanceof Error ? error.message : "FORBIDDEN";
-
-      if (code === "INVALID_ORG_ID") {
-        return reply.code(400).send({ ok: false, error: code });
-      }
-
-      if (code === "UNAUTHORIZED") {
-        return reply.code(401).send({ ok: false, error: code });
-      }
-
-      return reply.code(403).send({ ok: false, error: "FORBIDDEN" });
-    }
+    resolveOrgIdFromRequest(req, options);
   };
 }

@@ -1,0 +1,26 @@
+{
+  "allowedTopLevel": [
+    "apps",
+    "docs",
+    "scripts",
+    "package.json",
+    "package-lock.json",
+    ".env.example",
+    ".gitignore",
+    ".gitattributes"
+  ],
+  "labels": {
+    "application-backend": [
+      "apps/backend"
+    ],
+    "application-frontend": [
+      "apps/frontend"
+    ],
+    "documentation": [
+      "docs"
+    ],
+    "tooling-scripts": [
+      "scripts"
+    ]
+  }
+}

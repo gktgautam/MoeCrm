@@ -13,6 +13,7 @@ import dbEngageKnexPlugin from "@/core/plugins/db.engage.knex";
 import routes from "@/app/http/register-routes";
 import { env } from "@/core/config/env";
 import { makeLoggerConfig } from "@/core/logging/logger";
+import { registerErrorHandling } from "@/core/http/error-handler";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: makeLoggerConfig(env.ISPROD) }).withTypeProvider<TypeBoxTypeProvider>();
@@ -59,20 +60,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   // --- Routes ---
   await app.register(routes);
 
-  // --- Central error handler ---
-  app.setErrorHandler((err, req, reply) => {
-    req.log.error({ err }, "Unhandled error");
-
-    const statusCode = (err as any)?.statusCode;
-    if (statusCode && statusCode >= 400 && statusCode < 600) {
-      return reply.code(statusCode).send({
-        ok: false,
-        error: statusCode === 400 ? "BAD_REQUEST" : "REQUEST_ERROR",
-      });
-    }
-
-    return reply.code(500).send({ ok: false, error: "SERVER_ERROR" });
-  });
+  registerErrorHandling(app);
 
   return app;
 }

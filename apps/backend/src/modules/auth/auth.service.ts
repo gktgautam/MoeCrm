@@ -1,3 +1,4 @@
+import { Errors } from "@/core/http/app-error";
 import argon2 from "argon2";
 import type { AppRole } from "./auth.types.js";
 
@@ -9,22 +10,30 @@ export async function createAppUser(args: {
   role?: AppRole;
 }) {
   const passwordHash = await argon2.hash(args.password, {
-    type: argon2.argon2id,      // best variant
-    memoryCost: 19456,         // ~19MB (safe default)
+    type: argon2.argon2id,
+    memoryCost: 19456,
     timeCost: 2,
     parallelism: 1,
   });
 
-  const res = await args.db.query(
-    `
+  try {
+    const res = await args.db.query(
+      `
       insert into app_users (org_id, email, password_hash, role)
       values ($1, $2, $3, coalesce($4, 'admin'))
       returning id, org_id, email, role
     `,
-    [args.orgId, args.email.toLowerCase(), passwordHash, args.role ?? null]
-  );
+      [args.orgId, args.email.toLowerCase(), passwordHash, args.role ?? null]
+    );
 
-  return res.rows[0];
+    return res.rows[0];
+  } catch (error) {
+    const err = error as { code?: string };
+    if (err.code === "23505") {
+      throw Errors.emailExists();
+    }
+    throw error;
+  }
 }
 
 export async function verifyLogin(args: {
