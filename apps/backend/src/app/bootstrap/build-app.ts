@@ -11,6 +11,7 @@ import dbEngagePgPlugin from "@/core/plugins/db.engage.pg";
 import dbEngageKnexPlugin from "@/core/plugins/db.engage.knex";
 
 import routes from "@/app/http/register-routes";
+import { registerGlobalErrorHandlers } from "@/app/http/error-handler";
 import { env } from "@/core/config/env";
 import { makeLoggerConfig } from "@/core/logging/logger";
 
@@ -59,20 +60,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   // --- Routes ---
   await app.register(routes);
 
-  // --- Central error handler ---
-  app.setErrorHandler((err, req, reply) => {
-    req.log.error({ err }, "Unhandled error");
-
-    const statusCode = (err as any)?.statusCode;
-    if (statusCode && statusCode >= 400 && statusCode < 600) {
-      return reply.code(statusCode).send({
-        ok: false,
-        error: statusCode === 400 ? "BAD_REQUEST" : "REQUEST_ERROR",
-      });
-    }
-
-    return reply.code(500).send({ ok: false, error: "SERVER_ERROR" });
-  });
+  // --- Central error handlers ---
+  registerGlobalErrorHandlers(app);
 
   return app;
 }
