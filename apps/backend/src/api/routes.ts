@@ -1,10 +1,10 @@
 import type { FastifyPluginAsync } from "fastify";
 
-import healthRoutes from "./modules/health/health.routes.js";
-import authRoutes from "./modules/auth/auth.routes.js";
-import usersRoutes from "./modules/users/users.routes.js";
-import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
-import customersRoutes from "./modules/customers/customers.routes.js";
+import healthRoutes from "../domains/health/health.routes.js";
+import authRoutes from "../domains/auth/auth.routes.js";
+import usersRoutes from "../domains/users/users.routes.js";
+import dashboardRoutes from "../domains/dashboard/dashboard.routes.js";
+import customersRoutes from "../domains/customers/customers.routes.js";
  
 
 const v1Routes: FastifyPluginAsync = async (app) => {

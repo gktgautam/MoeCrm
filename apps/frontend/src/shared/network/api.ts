@@ -1,6 +1,6 @@
 import axios from "axios";
-import { appConfig } from "@/config/app-config";
-import { queryClient } from "@/lib/queryClient";
+import { appConfig } from "@/shared/config/app-config";
+import { queryClient } from "@/shared/network/query-client";
 
 export const api = axios.create({
   baseURL: appConfig.apiUrl,

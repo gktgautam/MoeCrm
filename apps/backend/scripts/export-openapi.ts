@@ -3,7 +3,7 @@ import path from "node:path";
 import process from "node:process";
 
 // Adjust import if your buildApp path is different
-import { buildApp } from "../src/app.js";
+import { buildApp } from "../src/bootstrap/app.js";
 
 async function main() {
   const app = await buildApp();

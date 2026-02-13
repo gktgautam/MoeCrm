@@ -4,15 +4,15 @@ import cors from "@fastify/cors";
 
 import cookie from "@fastify/cookie";
 
-import swaggerPlugin from "./plugins/swagger.js";
-import jwtAuthPlugin from "./plugins/jwt.auth.js";
-import dbCrmPlugin from "./plugins/db.crm.pg.js";
-import dbEngagePgPlugin from "./plugins/db.engage.pg.js";
-import dbEngageKnexPlugin from "./plugins/db.engage.knex.js";
+import swaggerPlugin from "../infrastructure/plugins/swagger.js";
+import jwtAuthPlugin from "../infrastructure/plugins/jwt.auth.js";
+import dbCrmPlugin from "../infrastructure/plugins/db.crm.pg.js";
+import dbEngagePgPlugin from "../infrastructure/plugins/db.engage.pg.js";
+import dbEngageKnexPlugin from "../infrastructure/plugins/db.engage.knex.js";
 
-import routes from "./routes.js";
-import { env } from "@/env";
-import { makeLoggerConfig } from "./lib/logger.js";
+import routes from "../api/routes.js";
+import { env } from "@/shared/config/env";
+import { makeLoggerConfig } from "../shared/logger/logger.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: makeLoggerConfig(env.ISPROD) }).withTypeProvider<TypeBoxTypeProvider>();

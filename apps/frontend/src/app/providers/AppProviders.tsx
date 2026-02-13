@@ -5,8 +5,8 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 import { theme } from "./theme";
-import { queryClient } from "@/lib/queryClient";
-import { AuthProvider } from "@/features/auth/AuthProvider";
+import { queryClient } from "@/shared/network/query-client";
+import { AuthProvider } from "@/domains/auth/AuthProvider";
 
 export default function AppProviders({ children }: { children: ReactNode }) {
   return (

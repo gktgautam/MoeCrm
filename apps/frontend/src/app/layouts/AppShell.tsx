@@ -1,7 +1,7 @@
 // src/app/layouts/AppShell.tsx
 import { Outlet } from "react-router-dom";
-import Sidebar from "@/core/Sidebar";
-import Topbar from "@/core/Topbar";
+import Sidebar from "@/shared/ui/navigation/Sidebar";
+import Topbar from "@/shared/ui/navigation/Topbar";
 
 export default function AppShell() {
   return (

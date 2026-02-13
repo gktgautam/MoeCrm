@@ -3,11 +3,11 @@ import { createBrowserRouter } from "react-router-dom";
 import AuthLayout from "@/app/layouts/AuthLayout";
 import AppShell from "@/app/layouts/AppShell";
 
-import ProtectedRoute from "@/features/auth/ProtectedRoute";
-import LoginPage from "@/features/auth/pages/LoginPage";
+import ProtectedRoute from "@/domains/auth/ProtectedRoute";
+import LoginPage from "@/domains/auth/pages/LoginPage";
 
-import NotFound from "@/pages/NotFound";
-import Unauthorized from "@/pages/Unauthorized";
+import NotFound from "@/app/pages/NotFound";
+import Unauthorized from "@/app/pages/Unauthorized";
 import { APP_ROUTES } from "./app-routes";
 
 export const router = createBrowserRouter([

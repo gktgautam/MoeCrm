@@ -1,5 +1,5 @@
 // src/core/Topbar.tsx
-import { useAuth } from "@/features/auth/useAuth";
+import { useAuth } from "@/domains/auth/useAuth";
 
 export default function Topbar() {
   const { state, logout } = useAuth();

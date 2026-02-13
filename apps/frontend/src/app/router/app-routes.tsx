@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import DashboardHome from "@/features/dashboard/pages/DashboardHome";
-import SegmentsList from "@/features/segments/pages/SegmentsList";
-import CampaignsList from "@/features/campaigns/pages/CampaignsList";
-import AnalyticsOverview from "@/features/analytics/pages/AnalyticsOverview";
-import SettingsHome from "@/features/settings/pages/SettingsHome";
+import DashboardHome from "@/domains/dashboard/pages/DashboardHome";
+import SegmentsList from "@/domains/segments/pages/SegmentsList";
+import CampaignsList from "@/domains/campaigns/pages/CampaignsList";
+import AnalyticsOverview from "@/domains/analytics/pages/AnalyticsOverview";
+import SettingsHome from "@/domains/settings/pages/SettingsHome";
 
 export type AppRoute = {
   path: string;

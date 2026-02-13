@@ -18,4 +18,4 @@ COPY --from=build /app/apps/backend/node_modules ./node_modules
 COPY --from=build /app/apps/backend/dist ./dist
 
 EXPOSE 8080
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/bootstrap/server.js"]

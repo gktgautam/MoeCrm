@@ -1,7 +1,7 @@
 // src/features/auth/pages/LoginPage.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/features/auth/useAuth";
+import { useAuth } from "@/domains/auth/useAuth";
 
 export default function LoginPage() {
   const { login } = useAuth();
