@@ -1,16 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { NAV } from "@/core/layout/navigation";
-import { useAuth } from "@/features/auth";
 
-export default function Sidebar() {
-  const { state } = useAuth();
-
-  if (state.status !== "authed") return null;
-
+export default function Sidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
   return (
     <aside className="w-56 border-r bg-white p-4">
       <nav className="space-y-1">
-        {NAV.filter((item) => state.allowedRoutes.includes(item.to)).map((item) => (
+        {NAV.filter((item) => allowedRoutes.includes(item.to)).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

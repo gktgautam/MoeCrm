@@ -1,15 +1,17 @@
 // src/core/rbac/RoleGate.tsx
-import { type Role, useAuth } from "@/features/auth";
+import type { ReactNode } from "react";
+import type { Role } from "@/core/rbac/rbac.types";
 
 export default function RoleGate({
+  role,
   allow,
   children,
   fallback = null,
 }: {
+  role?: Role;
   allow: Role[];
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
+  children: ReactNode;
+  fallback?: ReactNode;
 }) {
-  const { hasRole } = useAuth();
-  return <>{hasRole(allow) ? children : fallback}</>;
+  return <>{role && allow.includes(role) ? children : fallback}</>;
 }

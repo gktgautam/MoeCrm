@@ -8,7 +8,7 @@ import {
 import { api } from "@/core/api/api";
 import { queryClient } from "@/core/api/queryClient";
 import type { MeResponse, Role } from "./auth.types";
-import { hasPermission } from "./perm";
+import { hasPermission } from "@/core/rbac/permissions";
 import { AuthContext, type AuthContextValue, type AuthState, type LoginPayload } from "./auth.context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {

@@ -1,15 +1,7 @@
-import { hasPermission, type Role } from "@/features/auth";
+import { hasPermission } from "@/core/rbac/permissions";
+import type { AccessRule, AuthSnapshot } from "@/core/rbac/rbac.types";
 
-export type AccessRule = {
-  roles?: Role[];
-  anyOf?: string[];
-  allOf?: string[];
-};
-
-export type AuthSnapshot =
-  | { status: "loading" }
-  | { status: "guest" }
-  | { status: "authed"; role: Role; permissions: string[] };
+export type { AccessRule, AuthSnapshot };
 
 export function canAccess(snapshot: AuthSnapshot, rule?: AccessRule) {
   if (!rule) return snapshot.status === "authed";

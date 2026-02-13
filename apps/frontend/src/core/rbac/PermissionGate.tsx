@@ -1,36 +1,29 @@
 // src/core/rbac/PermissionGate.tsx
-import React from "react";
-import { hasPermission, useAuth } from "@/features/auth";
+import type { ReactNode } from "react";
+import { hasPermission } from "@/core/rbac/permissions";
+
 /**
  * PermissionGate
- * UI show/hide based on `permissions[]` from GET /auth/me.
- *
- * Examples:
- *  <PermissionGate anyOf={["segments:read"]}>...</PermissionGate>
- *  <PermissionGate allOf={["campaigns:read","campaigns:write"]}>...</PermissionGate>
+ * UI show/hide based on provided permissions.
  */
 export default function PermissionGate({
+  permissions,
   anyOf,
   allOf,
   children,
   fallback = null,
 }: {
+  permissions: string[];
   anyOf?: string[];
   allOf?: string[];
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
+  children: ReactNode;
+  fallback?: ReactNode;
 }) {
-  const { state } = useAuth();
-
-  if (state.status !== "authed") return <>{fallback}</>;
-
-  const perms = state.permissions ?? [];
-
   const okAny =
-    !anyOf || anyOf.length === 0 ? true : anyOf.some((p) => hasPermission(perms, p));
+    !anyOf || anyOf.length === 0 ? true : anyOf.some((p) => hasPermission(permissions, p));
 
   const okAll =
-    !allOf || allOf.length === 0 ? true : allOf.every((p) => hasPermission(perms, p));
+    !allOf || allOf.length === 0 ? true : allOf.every((p) => hasPermission(permissions, p));
 
   return <>{okAny && okAll ? children : fallback}</>;
 }
