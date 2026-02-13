@@ -8,7 +8,7 @@ import LoginPage from "@/features/auth/pages/LoginPage";
 
 import NotFound from "@/pages/NotFound";
 import Unauthorized from "@/pages/Unauthorized";
-import { APP_ROUTES } from "./app-routes";
+import { APP_ROUTES } from "@/app/router/app-routes";
 
 export const router = createBrowserRouter([
   {

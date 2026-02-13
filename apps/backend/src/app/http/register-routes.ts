@@ -1,36 +1,24 @@
-import type { FastifyPluginAsync } from "fastify";
+import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 
-import healthRoutes from "@/modules/health/health.routes";
-import authRoutes from "@/modules/auth/auth.routes";
-import usersRoutes from "@/modules/users/users.routes";
-import dashboardRoutes from "@/modules/dashboard/dashboard.routes";
-import customersRoutes from "@/modules/customers/customers.routes";
- 
+import { API_V1_MODULES } from "@/modules/api-v1.registry";
+import { PUBLIC_MODULES } from "@/modules/public.registry";
 
-const v1Routes: FastifyPluginAsync = async (app) => {
-  // v1 modules
-  await app.register(authRoutes, { prefix: "/auth" });
-  await app.register(usersRoutes, { prefix: "/users" });
-  await app.register(dashboardRoutes, { prefix: "/dashboard" });
-  await app.register(customersRoutes, { prefix: "/customers" });
+const registerModuleList = async (
+  app: FastifyInstance,
+  modules: { prefix: string; routes: FastifyPluginAsync }[]
+) => {
+  for (const moduleDefinition of modules) {
+    await app.register(moduleDefinition.routes, { prefix: moduleDefinition.prefix });
+  }
 };
 
-// Future:
-// const v2Routes: FastifyPluginAsync = async (app) => {
-//   await app.register(authRoutesV2, { prefix: "/auth" });
-//   // v1 modules...
-// };
-
+const v1Routes: FastifyPluginAsync = async (app) => {
+  await registerModuleList(app, API_V1_MODULES);
+};
 
 const routes: FastifyPluginAsync = async (app) => {
-  // Non-versioned / public
-  await app.register(healthRoutes, { prefix: "/api" });
-
-  // Versioned API
+  await registerModuleList(app, PUBLIC_MODULES);
   await app.register(v1Routes, { prefix: "/api/v1" });
-
-  // Future:
-  // await app.register(v2Routes, { prefix: "/api/v2" });
 };
 
 export default routes;

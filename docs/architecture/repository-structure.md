@@ -13,19 +13,20 @@ This repository now follows a **layered + feature-oriented monorepo layout** des
 
 - `app/`: application assembly
   - `bootstrap/`: app construction and wiring (`build-app.ts`)
-  - `http/`: route composition and versioning strategy (`register-routes.ts`)
+  - `http/`: route composition and versioning strategy (`register-routes.ts`) using module registries
 - `core/`: cross-cutting platform concerns
   - `config/`: environment and runtime configuration
   - `logging/`: logger configuration and policy
   - `plugins/`: Fastify plugins (auth, db, swagger, connection utilities)
 - `modules/`: domain features (auth, users, dashboard, customers, health)
   - each module owns its routes, controllers/services/repositories, and types
+  - registry files (`public.registry.ts`, `api-v1.registry.ts`) centralize module wiring to reduce merge conflicts in bootstrap files
 - `db/`: migrations, seeds, and DB tooling
 - `server.ts`: process entrypoint and graceful shutdown orchestration
 
 ### Backend conventions
 
-1. New feature code goes into `modules/<feature>`.
+1. New feature code goes into `modules/<feature>` and exposes route registration through the appropriate module registry.
 2. Reusable infrastructure goes into `core/*`.
 3. Versioned route registration belongs in `app/http/*` (not in modules).
 4. Boot/wiring logic belongs in `app/bootstrap/*`.
@@ -35,6 +36,7 @@ This repository now follows a **layered + feature-oriented monorepo layout** des
 - `app/`: app shell and composition layer
   - `config/`: app-level runtime config
   - `layouts/`, `providers/`, `router/`: composition boundaries
+  - router uses feature route registries so each feature owns its own route declarations
 - `features/`: product feature slices (dashboard, auth, analytics, etc.)
 - `shared/`: reusable cross-feature building blocks
   - `api/`: HTTP client and query client
@@ -44,7 +46,7 @@ This repository now follows a **layered + feature-oriented monorepo layout** des
 
 ### Frontend conventions
 
-1. Feature-specific code stays inside `features/<feature>`.
+1. Feature-specific code stays inside `features/<feature>`, including that feature's route map (`<feature>.routes.tsx`).
 2. Cross-feature reusable code moves to `shared/*`.
 3. App orchestration and wiring stays in `app/*`.
 4. Keep imports alias-based (`@/...`) to avoid brittle deep relative paths.
