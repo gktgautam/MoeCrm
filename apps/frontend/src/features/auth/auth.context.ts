@@ -6,7 +6,7 @@ export type LoginPayload = { orgId: number; email: string; password: string };
 export type AuthState =
   | { status: "loading" }
   | { status: "guest" }
-  | { status: "authed"; user: AuthUser; permissions: string[] };
+  | { status: "authed"; user: AuthUser; permissions: string[]; allowedRoutes: string[] };
 
 export type AuthContextValue = {
   state: AuthState;

@@ -22,7 +22,7 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: APP_ROUTES.map((route) => ({
           path: route.path,
-          element: <ProtectedRoute access={route.access} />,
+          element: <ProtectedRoute path={route.path} />,
           children: [{ index: true, element: route.element }],
         })),
       },

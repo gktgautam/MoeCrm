@@ -1,12 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./useAuth";
-import { canAccess, type AccessRule } from "./access-control";
 
 export default function ProtectedRoute({
-  access,
+  path,
   redirectTo = "/unauthorized",
 }: {
-  access?: AccessRule;
+  path?: string;
   redirectTo?: string;
 }) {
   const { state } = useAuth();
@@ -14,12 +13,9 @@ export default function ProtectedRoute({
   if (state.status === "loading") return null;
   if (state.status === "guest") return <Navigate to="/login" replace />;
 
-  const allowed = canAccess(
-    { status: "authed", role: state.user.role, permissions: state.permissions },
-    access
-  );
-
-  if (!allowed) return <Navigate to={redirectTo} replace />;
+  if (path && !state.allowedRoutes.includes(path)) {
+    return <Navigate to={redirectTo} replace />;
+  }
 
   return <Outlet />;
 }

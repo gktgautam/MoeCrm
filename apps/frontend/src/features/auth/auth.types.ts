@@ -15,4 +15,5 @@ export type MeResponse = {
   ok: true;
   user: AuthUser;
   permissions: string[];
+  allowedRoutes: string[];
 };

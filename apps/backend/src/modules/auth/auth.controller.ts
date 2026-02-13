@@ -1,6 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { SignupBody, LoginBody } from "./auth.schemas.js";
 import { fetchPermissionsForRole } from "./auth.permissions.js";
+import { resolveAllowedRoutes } from "./auth.route-access.js";
 import { createAppUser, verifyLogin } from "./auth.service.js";
 export const authController = {
   signup: async (req: FastifyRequest<{ Body: SignupBody }>, reply: FastifyReply) => {
@@ -80,6 +81,7 @@ export const authController = {
     if (!user) return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
 
     const permissions = await fetchPermissionsForRole(req.server, user.role);
+    const allowedRoutes = resolveAllowedRoutes(permissions);
 
     return {
       ok: true,
@@ -93,6 +95,7 @@ export const authController = {
         status: user.status,
       },
       permissions,
+      allowedRoutes,
     };
   },
 

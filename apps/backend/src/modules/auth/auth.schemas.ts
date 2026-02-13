@@ -126,5 +126,6 @@ export const meResponseSchema = Type.Object({
     status: Type.Optional(Type.String()),
   }),
   permissions: Type.Array(Type.String()),
+  allowedRoutes: Type.Array(Type.String()),
 });
 export type MeResponse = Static<typeof meResponseSchema>;

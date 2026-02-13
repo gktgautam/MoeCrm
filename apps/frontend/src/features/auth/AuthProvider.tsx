@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshMe = useCallback(async () => {
     const { data } = await api.get<MeResponse>("/auth/me");
-    setState({ status: "authed", user: data.user, permissions: data.permissions ?? [] });
+    setState({ status: "authed", user: data.user, permissions: data.permissions ?? [], allowedRoutes: data.allowedRoutes ?? ["/"] });
   }, []);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data } = await api.get<MeResponse>("/auth/me");
         if (!cancelled) {
-          setState({ status: "authed", user: data.user, permissions: data.permissions ?? [] });
+          setState({ status: "authed", user: data.user, permissions: data.permissions ?? [], allowedRoutes: data.allowedRoutes ?? ["/"] });
         }
       } catch {
         if (!cancelled) setState({ status: "guest" });

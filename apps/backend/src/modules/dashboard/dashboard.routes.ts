@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
-import { requireAuth, requireOrgAccess } from "../auth/auth.guard.js";
+import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard.js";
 import { fetchDashboardStats } from "./dashboard.service.js";
 import { resolveOrgIdFromRequest } from "../auth/org-access.js";
 
@@ -24,7 +24,11 @@ const dashboardRoutes: FastifyPluginAsync = async (app) => {
       querystring: QuerySchema,
       response: { 200: ResponseSchema },
     },
-    preHandler: [requireAuth, requireOrgAccess({ source: "query" })],
+    preHandler: [
+      requireAuth,
+      requirePermission({ anyOf: ["analytics:read", "campaigns:read", "segments:read", "users:read", "settings:read"] }),
+      requireOrgAccess({ source: "query" }),
+    ],
     handler: async (req) => {
       const orgId = resolveOrgIdFromRequest(req, { source: "query" });
       const stats = await fetchDashboardStats(app, orgId);
