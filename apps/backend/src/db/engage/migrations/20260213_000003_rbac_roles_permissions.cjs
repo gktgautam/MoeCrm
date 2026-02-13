@@ -53,7 +53,8 @@ exports.up = async function up(knex) {
       ('reports:export', 'reports', 'export', 'Export analytics/reports'),
       ('integrations:read', 'integrations', 'read', 'View integrations and API keys'),
       ('integrations:write', 'integrations', 'write', 'Manage integrations and API keys'),
-      ('logs:read', 'logs', 'read', 'View message logs and failures')
+      ('logs:read', 'logs', 'read', 'View message logs and failures'),
+      ('customers:sync', 'customers', 'sync', 'Sync CRM customers into Engage')
   `);
 
   await knex.schema.raw(`
@@ -64,6 +65,7 @@ exports.up = async function up(knex) {
       ('admin','users:read'),('admin','users:write'),('admin','campaigns:read'),('admin','campaigns:write'),
       ('admin','campaigns:send'),('admin','campaigns:approve'),('admin','campaigns:pause'),('admin','segments:read'),
       ('admin','segments:write'),('admin','analytics:read'),('admin','reports:export'),('admin','integrations:read'),
+      ('admin','customers:sync'),
       ('admin','integrations:write'),('admin','logs:read'),
       -- Marketer
       ('marketer','campaigns:read'),('marketer','campaigns:write'),('marketer','campaigns:send'),('marketer','segments:read'),
@@ -71,11 +73,11 @@ exports.up = async function up(knex) {
       -- Analyst
       ('analyst','analytics:read'),('analyst','reports:export'),
       -- Developer
-      ('developer','integrations:read'),('developer','integrations:write'),
+      ('developer','integrations:read'),('developer','integrations:write'),('developer','customers:sync'),
       -- Viewer
       ('viewer','analytics:read'),
       -- Support / Ops
-      ('support','campaigns:read'),('support','logs:read')
+      ('support','campaigns:read'),('support','logs:read'),('support','customers:sync')
     )
     INSERT INTO app_role_permissions (role_id, permission_id)
     SELECT r.id, p.id

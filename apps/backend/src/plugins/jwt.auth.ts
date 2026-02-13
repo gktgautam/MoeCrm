@@ -14,6 +14,7 @@ export type AuthTokenPayload = {
 declare module "fastify" {
   interface FastifyRequest {
     auth?: AuthTokenPayload;
+    authPermissions?: string[];
   }
 
   interface FastifyInstance {
