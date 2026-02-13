@@ -2,8 +2,7 @@
   "name": "equeengage",
   "private": true,
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*" 
   ],
   "scripts": {
     "dev:frontend": "npm --workspace apps/frontend run dev",

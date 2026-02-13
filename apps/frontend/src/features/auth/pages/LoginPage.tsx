@@ -6,8 +6,7 @@ import { useAuth } from "@/features/auth/useAuth";
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  const [orgId, setOrgId] = useState<number>(1); // dev default
+ 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -28,7 +27,7 @@ export default function LoginPage() {
     setErr(null);
     setLoading(true);
     try {
-      await login({ orgId, email, password });
+      await login({ email, password });
       navigate("/", { replace: true });
     } catch (error: unknown) {
       setErr(getErrorMessage(error));
@@ -44,12 +43,7 @@ export default function LoginPage() {
       {err ? <div className="text-red-600 text-sm">{err}</div> : null}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <input
-          className="border rounded px-3 py-2"
-          placeholder="Org ID"
-          value={orgId}
-          onChange={(e) => setOrgId(Number(e.target.value))}
-        />
+       
         <input
           className="border rounded px-3 py-2"
           placeholder="Email"

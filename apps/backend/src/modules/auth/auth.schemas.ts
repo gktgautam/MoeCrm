@@ -94,12 +94,10 @@ export const signupBodySchema = Type.Object({
 export type SignupBody = Static<typeof signupBodySchema>;
 
 /**
- * Login body:
- * - orgId: org context
+ * Login body: 
  * - email/password: credentials
  */
-export const loginBodySchema = Type.Object({
-  orgId: OrgId,
+export const loginBodySchema = Type.Object({ 
   email: Email,
   password: Type.String({ minLength: 1 }),
 });

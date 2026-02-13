@@ -1,7 +1,7 @@
 import { createContext } from "react";
 import type { AuthUser, Role } from "./auth.types";
 
-export type LoginPayload = { orgId: number; email: string; password: string };
+export type LoginPayload = { email: string; password: string };
 
 export type AuthState =
   | { status: "loading" }

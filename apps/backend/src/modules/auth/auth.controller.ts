@@ -34,8 +34,8 @@ export const authController = {
 
   login: async (req: FastifyRequest<{ Body: LoginBody }>, reply: FastifyReply) => {
     try {
-      const { orgId, email, password } = req.body;
-
+      const { email, password } = req.body;
+      const orgId = 1; // default
       const user = await verifyLogin({
         db: req.server.dbEngage,
         orgId,
