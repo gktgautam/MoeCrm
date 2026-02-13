@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import DashboardHome from "@/features/dashboard/pages/DashboardHome";
-import SegmentsList from "@/features/segments/pages/SegmentsList";
-import CampaignsList from "@/features/campaigns/pages/CampaignsList";
-import AnalyticsOverview from "@/features/analytics/pages/AnalyticsOverview";
-import SettingsHome from "@/features/settings/pages/SettingsHome";
+import DashboardPage from "@/features/dashboard/pages/DashboardPage";
+import SegmentsPage from "@/features/segments/pages/SegmentsPage";
+import CampaignsPage from "@/features/campaigns/pages/CampaignsPage";
+import AnalyticsPage from "@/features/analytics/pages/AnalyticsPage";
+import SettingsPage from "@/features/settings/pages/SettingsPage";
 import type { AccessRule } from "@/features/auth/access-control";
 
 export type AppRoute = {
@@ -17,31 +17,31 @@ export const APP_ROUTES: AppRoute[] = [
   {
     path: "/",
     navLabel: "Dashboard",
-    element: <DashboardHome />,
+    element: <DashboardPage />,
     access: {},
   },
   {
     path: "/segments",
     navLabel: "Segments",
-    element: <SegmentsList />,
+    element: <SegmentsPage />,
     access: { anyOf: ["segments:read"] },
   },
   {
     path: "/campaigns",
     navLabel: "Campaigns",
-    element: <CampaignsList />,
+    element: <CampaignsPage />,
     access: { anyOf: ["campaigns:read"] },
   },
   {
     path: "/analytics",
     navLabel: "Analytics",
-    element: <AnalyticsOverview />,
+    element: <AnalyticsPage />,
     access: { anyOf: ["analytics:read"] },
   },
   {
     path: "/settings",
     navLabel: "Settings",
-    element: <SettingsHome />,
+    element: <SettingsPage />,
     access: { anyOf: ["settings:read"] },
   },
 ];

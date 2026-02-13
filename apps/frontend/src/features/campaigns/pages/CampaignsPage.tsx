@@ -1,3 +1,3 @@
-export default function CampaignsList() {
+export default function CampaignsPage() {
   return <div className="text-lg font-semibold">Campaigns</div>;
 }
