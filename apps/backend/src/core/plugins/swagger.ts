@@ -1,4 +1,4 @@
-// src/plugins/swagger.ts
+// src/core/plugins/swagger.ts
 import fp from "fastify-plugin";
 
 export default fp(async (app) => {

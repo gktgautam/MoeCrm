@@ -1,4 +1,4 @@
-// src/core/Topbar.tsx
+// src/shared/navigation/Topbar.tsx
 import { useAuth } from "@/features/auth/useAuth";
 
 export default function Topbar() {

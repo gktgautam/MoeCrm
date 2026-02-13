@@ -1,7 +1,7 @@
-// src/plugins/db.engage.knex.ts
+// src/core/plugins/db.engage.knex.ts
 import fp from "fastify-plugin";
 import knex from "knex";
-import { env } from "@/env";
+import { env } from "@/core/config/env";
 import { connectWithRetry } from "./db-retry.js";
 
 declare module "fastify" {

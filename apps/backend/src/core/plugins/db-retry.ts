@@ -1,4 +1,4 @@
-// src/plugins/db-retry.ts
+// src/core/plugins/db-retry.ts
 import type { FastifyInstance } from "fastify";
 
 type RetryOptions = {

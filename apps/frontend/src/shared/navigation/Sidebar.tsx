@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { NAV } from "./nav";
+import { NAV } from "@/shared/navigation/nav";
 import { useAuth } from "@/features/auth/useAuth";
 
 export default function Sidebar() {

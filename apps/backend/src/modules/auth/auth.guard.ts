@@ -1,5 +1,5 @@
 import type { preHandlerHookHandler } from "fastify";
-import type { AuthTokenPayload } from "../../plugins/jwt.auth.js";
+import type { AuthTokenPayload } from "@/core/plugins/jwt.auth";
 import type { AppRole } from "./auth.types.js";
 import {
   fetchPermissionsForRole,
