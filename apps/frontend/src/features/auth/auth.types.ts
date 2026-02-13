@@ -1,5 +1,7 @@
 // src/features/auth/auth.types.ts
-export type Role = "admin" | "marketer" | "analyst" | "developer" | "viewer" | "support";
+import type { Role } from "@/shared/types/auth";
+
+export type { Role };
 
 export type AuthUser = {
   id: number;

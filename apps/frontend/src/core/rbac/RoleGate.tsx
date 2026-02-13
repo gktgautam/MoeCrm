@@ -1,6 +1,6 @@
 // src/core/rbac/RoleGate.tsx
 import type { ReactNode } from "react";
-import type { Role } from "@/core/rbac/rbac.types";
+import type { Role } from "@/shared/types/auth";
 
 export default function RoleGate({
   role,

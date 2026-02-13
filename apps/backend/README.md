@@ -79,6 +79,16 @@ All endpoints must return one of these shapes:
 
 Use `Errors.*` helpers from `src/core/http/app-error.ts`.
 
+```ts
+import { Errors } from "@/core/http/app-error";
+
+if (!req.auth) throw Errors.unauthorized();
+
+if (!canAccessOrg) {
+  throw Errors.forbidden("Missing permission: customers:sync");
+}
+```
+
 Rules:
 
 - Never send manual error payloads in routes/services.
