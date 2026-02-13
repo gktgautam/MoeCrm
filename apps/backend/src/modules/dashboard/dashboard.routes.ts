@@ -3,6 +3,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard.js";
 import { fetchDashboardStats } from "./dashboard.service.js";
 import { resolveOrgIdFromRequest } from "../auth/org-access.js";
+import { DASHBOARD_ROUTE_REQUIREMENT } from "../auth/auth.route-access.js";
 
 const QuerySchema = Type.Object({ orgId: Type.Optional(Type.Integer({ minimum: 1 })) });
 
@@ -26,7 +27,7 @@ const dashboardRoutes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [
       requireAuth,
-      requirePermission({ anyOf: ["analytics:read", "campaigns:read", "segments:read", "users:read", "settings:read"] }),
+      requirePermission(DASHBOARD_ROUTE_REQUIREMENT),
       requireOrgAccess({ source: "query" }),
     ],
     handler: async (req) => {
