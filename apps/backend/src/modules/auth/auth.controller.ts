@@ -1,24 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { SignupBody, LoginBody } from "./auth.schemas.js";
+import { fetchPermissionsForRole } from "./auth.permissions.js";
 import { createAppUser, verifyLogin } from "./auth.service.js";
-
-async function permissionsForRole(db: any, roleKey: string) {
-  const { rows } = await db.query(
-    `
-      select p.key
-      from app_role_permissions rp
-      join app_roles r on r.id = rp.role_id
-      join app_permissions p on p.id = rp.permission_id
-      where r.key = $1
-      order by p.key asc
-    `,
-    [roleKey],
-  );
-
-  return (rows as Array<{ key: string }>).map((row) => row.key);
-}
-
-
 export const authController = {
   signup: async (req: FastifyRequest<{ Body: SignupBody }>, reply: FastifyReply) => {
     try {
@@ -68,11 +51,8 @@ export const authController = {
         orgId: String(user.org_id),
         role: user.role,
       });
-  
-
       req.server.setAuthCookie(reply, token);
 
-      // helpful for API clients (optional)
       return reply.code(200).send({ ok: true, token });
     } catch (err) {
       req.log.error({ err }, "login failed");
@@ -83,12 +63,9 @@ export const authController = {
 
   me: async (req: FastifyRequest, reply: FastifyReply) => {
     if (!req.auth) return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
-
-    
     const userId = Number(req.auth.sub);
     const orgId = Number(req.auth.orgId);
 
-    // Engage DB se app user read (safe fields only)
     const { rows } = await req.server.dbEngage.query(
       `
       select id, org_id, email, first_name, last_name, role, status
@@ -99,19 +76,21 @@ export const authController = {
       [userId, orgId]
     );
 
-    const u = rows[0];
-    if (!u) return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
-    const permissions = await permissionsForRole(req.server.dbEngage, u.role);
+    const user = rows[0];
+    if (!user) return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
+
+    const permissions = await fetchPermissionsForRole(req.server, user.role);
+
     return {
       ok: true,
       user: {
-        id: u.id,
-        orgId: u.org_id,
-        email: u.email,
-        firstName: u.first_name,
-        lastName: u.last_name,
-        role: u.role, // or use role from token; DB is source of truth better
-        status: u.status,
+        id: user.id,
+        orgId: user.org_id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: user.role,
+        status: user.status,
       },
       permissions,
     };

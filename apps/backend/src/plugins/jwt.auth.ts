@@ -1,4 +1,3 @@
-// src/plugins/jwt.auth.ts
 import fp from "fastify-plugin";
 import jwt from "@fastify/jwt";
 import type { FastifyReply } from "fastify";
@@ -28,7 +27,6 @@ declare module "fastify" {
   }
 }
 
-// Optional but best TS DX if you use req.jwtVerify() later
 declare module "@fastify/jwt" {
   interface FastifyJWT {
     payload: AuthTokenPayload;
@@ -63,7 +61,6 @@ export default fp(async (app) => {
     reply.clearCookie(AUTH_COOKIE_NAME, { path: "/" });
   });
 
-  // ✅ One function to get token from cookie OR header
   app.decorate("getAuthToken", (req: any): string | null => {
     const cookieToken = req.cookies?.[AUTH_COOKIE_NAME];
     if (cookieToken) return cookieToken;
@@ -77,27 +74,20 @@ export default fp(async (app) => {
     return null;
   });
 
-  // ✅ Global optional auth: sets req.auth if token exists + valid
-    app.addHook("preHandler", async (req, reply) => {
-      req.log.info({ cookies: req.cookies, authz: req.headers.authorization }, "preHandler start");
+  app.addHook("preHandler", async (req) => {
+    req.log.info({ cookies: req.cookies, authz: req.headers.authorization }, "auth preHandler start");
 
-      const token = app.getAuthToken(req);
-      req.log.info({ hasToken: !!token }, "token extracted");
+    const token = app.getAuthToken(req);
+    req.log.info({ hasToken: !!token }, "auth token extracted");
 
-      if (!token) return;
+    if (!token) return;
 
-      try {
-        req.auth = app.verifyAuthToken(token);
-        req.log.info({ auth: req.auth }, "token verified");
-      } catch (err) {
-        req.log.warn({ err }, "token invalid");
-        req.auth = undefined;
-      }
-    });
-    
-
-    // app.addHook("onResponse", async (req) => {
-    //   req.log.info({ statusCode: req.body }, "response finished");
-    // });
-
+    try {
+      req.auth = app.verifyAuthToken(token);
+      req.log.info({ auth: req.auth }, "auth token verified");
+    } catch (err) {
+      req.log.warn({ err }, "auth token invalid");
+      req.auth = undefined;
+    }
+  });
 });
