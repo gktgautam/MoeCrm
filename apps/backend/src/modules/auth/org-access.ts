@@ -1,7 +1,7 @@
 import type { FastifyRequest } from "fastify";
 import type { AppRole } from "./auth.types.js";
 
-const CROSS_ORG_DEFAULT: readonly AppRole[] = ["owner"];
+const CROSS_ORG_DEFAULT: readonly AppRole[] = ["admin"];
 
 type Source = "query" | "body" | "params";
 

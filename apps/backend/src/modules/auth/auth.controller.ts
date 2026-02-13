@@ -2,18 +2,20 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import type { SignupBody, LoginBody } from "./auth.schemas.js";
 import { createAppUser, verifyLogin } from "./auth.service.js";
 
-function permissionsForRole(role: string) {
-  switch (role) {
-    case "owner":
-    case "admin":
-      return ["segments:read", "segments:write", "campaigns:read", "campaigns:write", "settings:write"];
-    case "manager":
-      return ["segments:read", "segments:write", "campaigns:read", "campaigns:write"];
-    case "viewer":
-      return ["segments:read", "campaigns:read"];
-    default:
-      return [];
-  }
+async function permissionsForRole(db: any, roleKey: string) {
+  const { rows } = await db.query(
+    `
+      select p.key
+      from app_role_permissions rp
+      join app_roles r on r.id = rp.role_id
+      join app_permissions p on p.id = rp.permission_id
+      where r.key = $1
+      order by p.key asc
+    `,
+    [roleKey],
+  );
+
+  return (rows as Array<{ key: string }>).map((row) => row.key);
 }
 
 
@@ -99,8 +101,7 @@ export const authController = {
 
     const u = rows[0];
     if (!u) return reply.code(401).send({ ok: false, error: "UNAUTHORIZED" });
-    console.log()
-
+    const permissions = await permissionsForRole(req.server.dbEngage, u.role);
     return {
       ok: true,
       user: {
@@ -112,7 +113,7 @@ export const authController = {
         role: u.role, // or use role from token; DB is source of truth better
         status: u.status,
       },
-      permissions: permissionsForRole(u.role),
+      permissions,
     };
   },
 

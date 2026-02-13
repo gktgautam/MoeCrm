@@ -3,6 +3,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { requireAuth, requireOrgAccess, requireRole } from "../auth/auth.guard.js";
 import { listUsersByOrg } from "./users.controller.js";
 import { resolveOrgIdFromRequest } from "../auth/org-access.js";
+import { APP_ROLES } from "../auth/auth.types.js";
 
 const QuerySchema = Type.Object({
   orgId: Type.Optional(Type.Integer({ minimum: 1 })),
@@ -12,12 +13,7 @@ const UserSchema = Type.Object({
   id: Type.Integer(),
   org_id: Type.Integer(),
   email: Type.String(),
-  role: Type.Union([
-    Type.Literal("owner"),
-    Type.Literal("admin"),
-    Type.Literal("manager"),
-    Type.Literal("viewer"),
-  ]),
+  role: Type.Union(APP_ROLES.map((role) => Type.Literal(role))),
   status: Type.Union([Type.Literal("invited"), Type.Literal("active"), Type.Literal("disabled")]),
   created_at: Type.String(),
 });
@@ -35,7 +31,7 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
       querystring: QuerySchema,
       response: { 200: ResponseSchema },
     },
-    preHandler: [requireAuth, requireRole(["owner", "admin", "manager"]), requireOrgAccess({ source: "query" })],
+    preHandler: [requireAuth, requireRole(["admin"]), requireOrgAccess({ source: "query" })],
     handler: async (req) => {
       const orgId = resolveOrgIdFromRequest(req, { source: "query" });
       const users = await listUsersByOrg(app, orgId);

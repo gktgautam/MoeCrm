@@ -33,7 +33,7 @@ const routes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [
       requireAuth,
-      requireRole(["owner", "admin", "manager"]),
+      requireRole(["admin", "developer", "support"]),
       requireOrgAccess({ source: "body" }),
     ],
     handler: async (req, reply) => {

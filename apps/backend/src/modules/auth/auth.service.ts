@@ -1,11 +1,12 @@
 import argon2 from "argon2";
+import type { AppRole } from "./auth.types.js";
 
 export async function createAppUser(args: {
   db: any;
   orgId: number;
   email: string;
   password: string;
-  role?: "owner" | "admin" | "manager" | "viewer";
+  role?: AppRole;
 }) {
   const passwordHash = await argon2.hash(args.password, {
     type: argon2.argon2id,      // best variant
@@ -17,7 +18,7 @@ export async function createAppUser(args: {
   const res = await args.db.query(
     `
       insert into app_users (org_id, email, password_hash, role)
-      values ($1, $2, $3, coalesce($4, 'owner'))
+      values ($1, $2, $3, coalesce($4, 'admin'))
       returning id, org_id, email, role
     `,
     [args.orgId, args.email.toLowerCase(), passwordHash, args.role ?? null]

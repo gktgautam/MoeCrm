@@ -1,10 +1,11 @@
 import type { FastifyInstance } from "fastify";
+import type { AppRole } from "../auth/auth.types.js";
 
 export type AppUserListItem = {
   id: number;
   org_id: number;
   email: string;
-  role: "owner" | "admin" | "manager" | "viewer";
+  role: AppRole;
   status: "invited" | "active" | "disabled";
   created_at: string;
 };

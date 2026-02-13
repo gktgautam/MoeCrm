@@ -16,7 +16,7 @@ exports.seed = async function seed(knex) {
       display_name: "Admin User",
       password_hash: passwordHash,
       auth_provider: "password",
-      role: "owner",
+      role: "admin",
       status: "active",
       invited_at: knex.fn.now(),
       last_login_at: null,

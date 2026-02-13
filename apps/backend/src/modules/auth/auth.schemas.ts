@@ -1,5 +1,6 @@
 // src/modules/auth/auth.schemas.ts
 import { Type, type Static } from "@sinclair/typebox";
+import { APP_ROLES } from "./auth.types.js";
 
 /**
  * Auth schemas (TypeBox)
@@ -39,12 +40,7 @@ export const Password = Type.String({ minLength: 8, maxLength: 200 });
  * - /me response
  * - requireRole guard
  */
-export const Role = Type.Union([
-  Type.Literal("owner"),
-  Type.Literal("admin"),
-  Type.Literal("manager"),
-  Type.Literal("viewer"),
-]);
+export const Role = Type.Union(APP_ROLES.map((role) => Type.Literal(role)));
 export type TRole = Static<typeof Role>;
 
 // -----------------------------
@@ -87,7 +83,7 @@ export type TAuthPayload = Static<typeof AuthPayloadSchema>;
  * Signup body:
  * - orgId: org context
  * - email/password: credentials
- * - role: optional (if not provided, backend may default to "owner" on first user)
+ * - role: optional (if not provided, backend defaults to "admin")
  */
 export const signupBodySchema = Type.Object({
   orgId: OrgId,

@@ -3,11 +3,12 @@ import fp from "fastify-plugin";
 import jwt from "@fastify/jwt";
 import type { FastifyReply } from "fastify";
 import { env } from "@/env";
+import type { AppRole } from "@/modules/auth/auth.types";
 
 export type AuthTokenPayload = {
   sub: string;
   orgId: string;
-  role: "owner" | "admin" | "manager" | "viewer";
+  role: AppRole;
 };
 
 declare module "fastify" {
