@@ -12,8 +12,7 @@
     "build:frontend": "npm --workspace apps/frontend run build",
     "build:backend": "npm --workspace apps/backend run build",
     "lint": "npm -ws run lint",
-    "test": "npm -ws run test",
-    "check:structure": "node scripts/validate-structure.mjs"
+    "test": "npm -ws run test"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

@@ -55,8 +55,3 @@ This repository now follows a **layered + feature-oriented monorepo layout** des
 - Lower merge conflict frequency: teams touch isolated feature slices.
 - Easier onboarding: predictable locations for common responsibilities.
 - Scales with growth: new modules/features slot into existing structure without ad-hoc folders.
-
-
-## Enforcement
-
-Run `npm run check:structure` to validate top-level folder boundaries and prevent random file placement drift.
