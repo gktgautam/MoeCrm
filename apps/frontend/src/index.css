@@ -1,7 +1,0 @@
-@layer theme, base, mui, components, utilities;
-
-@import "tailwindcss";
-
-@layer mui {
-  /* MUI styles land here so utilities can override */
-}

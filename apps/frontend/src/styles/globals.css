@@ -1,0 +1,122 @@
+/* src/styles/globals.css */
+@import "tailwindcss";
+
+/* ============================
+   1) SOURCE OF TRUTH TOKENS
+   - store as R G B for alpha support
+   - light defaults on :root
+   - dark overrides on .dark
+   ============================ */
+
+/* Light mode tokens */
+:root {
+  /* surfaces */
+  --c-bg: 250 250 250;        /* #fafafa */
+  --c-surface: 255 255 255;   /* #ffffff */
+  --c-elevated: 244 244 245;  /* subtle alt surface */
+  --c-border: 228 228 231;    /* #e4e4e7 */
+
+  /* text */
+  --c-text: 9 9 11;           /* #09090b */
+  --c-muted: 113 113 122;     /* #71717a */
+
+  /* brand */
+  --c-primary: 24 24 27;      /* #18181b */
+  --c-primary-contrast: 250 250 250;
+  --c-secondary: 113 113 122;
+
+  /* status */
+  --c-success: 16 185 129;
+  --c-warning: 245 158 11;
+  --c-danger: 239 68 68;
+  --c-info: 59 130 246;
+
+  /* focus ring */
+  --c-ring: var(--c-primary);
+
+  /* radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.12), 0 4px 6px -4px rgb(0 0 0 / 0.12);
+}
+
+/* Dark mode tokens */
+.dark {
+  --c-bg: 9 9 11;            /* #09090b */
+  --c-surface: 24 24 27;     /* #18181b */
+  --c-elevated: 39 39 42;    /* #27272a */
+  --c-border: 39 39 42;      /* #27272a */
+
+  --c-text: 250 250 250;     /* #fafafa */
+  --c-muted: 161 161 170;    /* #a1a1aa */
+
+  --c-primary: 250 250 250;
+  --c-primary-contrast: 9 9 11;
+  --c-secondary: 161 161 170;
+
+  --c-success: 16 185 129;
+  --c-warning: 245 158 11;
+  --c-danger: 239 68 68;
+  --c-info: 96 165 250;
+
+  --c-ring: var(--c-primary);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.25);
+  --shadow-md: 0 6px 18px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 12px 34px rgb(0 0 0 / 0.45);
+}
+
+/* ============================
+   2) Tailwind v4 token mapping
+   ============================ */
+@theme {
+  --color-bg: rgb(var(--c-bg) / <alpha-value>);
+  --color-surface: rgb(var(--c-surface) / <alpha-value>);
+  --color-elevated: rgb(var(--c-elevated) / <alpha-value>);
+  --color-border: rgb(var(--c-border) / <alpha-value>);
+
+  --color-text: rgb(var(--c-text) / <alpha-value>);
+  --color-muted: rgb(var(--c-muted) / <alpha-value>);
+
+  --color-primary: rgb(var(--c-primary) / <alpha-value>);
+  --color-primary-contrast: rgb(var(--c-primary-contrast) / <alpha-value>);
+  --color-secondary: rgb(var(--c-secondary) / <alpha-value>);
+
+  --color-success: rgb(var(--c-success) / <alpha-value>);
+  --color-warning: rgb(var(--c-warning) / <alpha-value>);
+  --color-danger: rgb(var(--c-danger) / <alpha-value>);
+  --color-info: rgb(var(--c-info) / <alpha-value>);
+
+  --color-ring: rgb(var(--c-ring) / <alpha-value>);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+}
+
+/* ============================
+   3) App base styles
+   ============================ */
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: rgb(var(--c-bg) / 1);
+  color: rgb(var(--c-text) / 1);
+}
+
+/* Optional: nicer focus ring for custom elements */
+:focus-visible {
+  outline: 2px solid rgb(var(--c-ring) / 0.6);
+  outline-offset: 2px;
+}

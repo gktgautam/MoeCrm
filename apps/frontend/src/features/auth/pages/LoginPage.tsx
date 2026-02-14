@@ -8,8 +8,7 @@ import {
   Alert,
   Box,
   Button,
-  CircularProgress,
-  Container,
+  CircularProgress, 
   IconButton,
   InputAdornment,
   Link,
@@ -18,6 +17,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+
 import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 
@@ -38,8 +38,7 @@ export default function LoginPage() {
     return ok ? "" : "Enter a valid email";
   }, [email]);
 
-  const canSubmit = !loading && !!email && !!password && !emailError;
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
@@ -64,27 +63,17 @@ export default function LoginPage() {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100dvh",
-        display: "flex",
-        alignItems: "center",
-        py: { xs: 6, md: 10 },
-        bgcolor: (t) => (t.palette.mode === "dark" ? "background.default" : "#f6f7fb"),
-      }}
-    >
-      <Container maxWidth="sm">
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 3, sm: 4 },
-            borderRadius: 3,
-            border: "1px solid",
-            borderColor: "divider",
-            boxShadow: "0 12px 30px rgba(0,0,0,0.06)",
-          }}
-        >
-          <Stack spacing={3}>
+    <div className="p-10 md:min-w-100 min-w-full rounded-2xl">
+      
+      <div className=" p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-[0_12px_30px_rgba(0,0,0,0.06)] ">
+
+          <div className=" flex flex-col gap-4">
+            
+            <div>
+              <h1 className="text-2xl font-semibold">Welcome back</h1>
+              <p>Sign in to continue to your dashboard.</p>
+            </div>
+            
             <Box>
               <Typography variant="h5" fontWeight={700}>
                 Welcome back
@@ -94,11 +83,7 @@ export default function LoginPage() {
               </Typography>
             </Box>
 
-            {err ? (
-              <Alert severity="error" variant="outlined">
-                {err}
-              </Alert>
-            ) : null}
+            
 
             <Box component="form" onSubmit={handleSubmit} noValidate>
               <Stack spacing={2.25}>
@@ -159,7 +144,7 @@ export default function LoginPage() {
                   size="large"
                   variant="contained"
                   disableElevation
-                  disabled={!canSubmit}
+                  disabled={loading}
                   sx={{
                     py: 1.2,
                     borderRadius: 2,
@@ -176,23 +161,18 @@ export default function LoginPage() {
                 </Typography>
               </Stack>
             </Box>
-          </Stack>
-        </Paper>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: "center" }}>
-          Need access?{" "}
-          <Link
-            component="button"
-            type="button"
-            underline="hover"
-            onClick={() => {
-              // navigate("/request-access")
-            }}
-          >
-            Request access
-          </Link>
-        </Typography>
-      </Container>
-    </Box>
+            {err ? (
+              <Alert severity="error" variant="outlined">
+                {err}
+              </Alert>
+            ) : null}
+            
+          </div>
+        </div>
+
+        
+       
+    </div>
   );
 }
