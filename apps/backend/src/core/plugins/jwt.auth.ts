@@ -14,7 +14,6 @@ declare module "fastify" {
   interface FastifyRequest {
     auth?: AuthTokenPayload;
     authPermissions?: string[];
-    authRoleKey?: string | null;
   }
 
   interface FastifyInstance {

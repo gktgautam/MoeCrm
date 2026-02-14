@@ -2,12 +2,7 @@ import type { preHandlerHookHandler } from "fastify";
 import { Errors } from "@/core/http/app-error";
 import type { AuthTokenPayload } from "@/core/plugins/jwt.auth";
 import type { AppRole } from "./auth.types.js";
-import {
-  getPermissionsForUser,
-  getRoleKeyForUser,
-  permissionMatches,
-  type PermissionRequirement,
-} from "./auth.permissions.js";
+import { getPermissionsForUser, permissionMatches, type PermissionRequirement } from "./auth.permissions.js";
 import { resolveOrgIdFromRequest } from "./org-access.js";
 
 async function getRequestPermissions(req: any): Promise<string[]> {
@@ -19,17 +14,6 @@ async function getRequestPermissions(req: any): Promise<string[]> {
 
   req.authPermissions = await getPermissionsForUser(req.server, userId, orgId);
   return req.authPermissions;
-}
-
-async function getRequestRole(req: any): Promise<string | null> {
-  if (!req.auth) return null;
-  if (typeof req.authRoleKey === "string") return req.authRoleKey;
-
-  const userId = Number(req.auth.sub);
-  const orgId = Number(req.auth.orgId);
-  req.authRoleKey = await getRoleKeyForUser(req.server, userId, orgId);
-
-  return req.authRoleKey;
 }
 
 export const requireAuth: preHandlerHookHandler = async (req) => {
@@ -44,8 +28,7 @@ export function requireRole(roles: AuthTokenPayload["role"][]): preHandlerHookHa
       throw Errors.unauthorized();
     }
 
-    const roleKey = await getRequestRole(req);
-    if (!roleKey || !roles.includes(roleKey as AuthTokenPayload["role"])) {
+    if (!roles.includes(req.auth.role)) {
       throw Errors.forbidden();
     }
   };
