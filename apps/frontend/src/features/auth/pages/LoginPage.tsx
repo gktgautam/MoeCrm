@@ -1,7 +1,6 @@
-// src/features/auth/pages/LoginPage.tsx
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/features/auth/useAuth";
+import { useAuth } from "@/features/auth";
 import { getApiErrorMessage, getApiErrorCode, getApiRequestId } from "@/core/http/api-error";
 
 import {
@@ -12,7 +11,6 @@ import {
   IconButton,
   InputAdornment,
   Link,
-  Paper,
   Stack,
   TextField,
   Typography,
