@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { Errors } from "@/core/http/app-error";
 import type { SignupBody, LoginBody } from "./auth.schemas.js";
-import { fetchPermissionsForRole } from "./auth.permissions.js";
+import { fetchPermissionsForUser, fetchRoleKeysForUser } from "./auth.permissions.js";
 import { resolveAllowedRoutes } from "./auth.route-access.js";
 import { createAppUser, verifyLogin } from "./auth.service.js";
 
@@ -18,7 +18,6 @@ export const authController = {
     const token = req.server.signAuthToken({
       sub: String(user.id),
       orgId: String(user.org_id),
-      role: user.role,
     });
 
     req.server.setAuthCookie(reply, token);
@@ -42,7 +41,6 @@ export const authController = {
     const token = req.server.signAuthToken({
       sub: String(user.id),
       orgId: String(user.org_id),
-      role: user.role,
     });
     req.server.setAuthCookie(reply, token);
 
@@ -62,13 +60,16 @@ export const authController = {
       where id = $1 and org_id = $2
       limit 1
       `,
-      [userId, orgId]
+      [userId, orgId],
     );
 
     const user = rows[0];
     if (!user) throw Errors.unauthorized();
 
-    const permissions = await fetchPermissionsForRole(req.server, user.role);
+    const [roles, permissions] = await Promise.all([
+      fetchRoleKeysForUser(req.server, { userId, orgId }),
+      fetchPermissionsForUser(req.server, { userId, orgId }),
+    ]);
     const allowedRoutes = resolveAllowedRoutes(permissions);
 
     return {
@@ -83,6 +84,7 @@ export const authController = {
           role: user.role,
           status: user.status,
         },
+        roles,
         permissions,
         allowedRoutes,
       },

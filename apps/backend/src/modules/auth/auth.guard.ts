@@ -1,9 +1,9 @@
 import type { preHandlerHookHandler } from "fastify";
 import { Errors } from "@/core/http/app-error";
-import type { AuthTokenPayload } from "@/core/plugins/jwt.auth";
 import type { AppRole } from "./auth.types.js";
 import {
-  fetchPermissionsForRole,
+  fetchPermissionsForUser,
+  fetchRoleKeysForUser,
   permissionMatches,
   type PermissionRequirement,
 } from "./auth.permissions.js";
@@ -13,8 +13,23 @@ async function getRequestPermissions(req: any): Promise<string[]> {
   if (!req.auth) return [];
   if (Array.isArray(req.authPermissions)) return req.authPermissions;
 
-  req.authPermissions = await fetchPermissionsForRole(req.server, req.auth.role);
+  // Cache computed auth permissions on request to avoid duplicate RBAC queries.
+  req.authPermissions = await fetchPermissionsForUser(req.server, {
+    userId: Number(req.auth.sub),
+    orgId: Number(req.auth.orgId),
+  });
   return req.authPermissions;
+}
+
+async function getRequestRoleKeys(req: any): Promise<string[]> {
+  if (!req.auth) return [];
+  if (Array.isArray(req.authRoleKeys)) return req.authRoleKeys;
+
+  req.authRoleKeys = await fetchRoleKeysForUser(req.server, {
+    userId: Number(req.auth.sub),
+    orgId: Number(req.auth.orgId),
+  });
+  return req.authRoleKeys;
 }
 
 export const requireAuth: preHandlerHookHandler = async (req) => {
@@ -23,13 +38,14 @@ export const requireAuth: preHandlerHookHandler = async (req) => {
   }
 };
 
-export function requireRole(roles: AuthTokenPayload["role"][]): preHandlerHookHandler {
+export function requireRole(roles: AppRole[]): preHandlerHookHandler {
   return async (req) => {
     if (!req.auth) {
       throw Errors.unauthorized();
     }
 
-    if (!roles.includes(req.auth.role)) {
+    const roleKeys = await getRequestRoleKeys(req);
+    if (!roles.some((role) => roleKeys.includes(role))) {
       throw Errors.forbidden();
     }
   };
@@ -69,6 +85,7 @@ export function requireOrgAccess(options: {
       throw Errors.unauthorized();
     }
 
-    resolveOrgIdFromRequest(req, options);
+    const roleKeys = await getRequestRoleKeys(req);
+    resolveOrgIdFromRequest(req, options, roleKeys);
   };
 }

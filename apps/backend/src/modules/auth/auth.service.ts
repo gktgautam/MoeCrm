@@ -17,16 +17,34 @@ export async function createAppUser(args: {
   });
 
   try {
-    const res = await args.db.query(
-      `
-      insert into app_users (org_id, email, password_hash, role)
-      values ($1, $2, $3, coalesce($4, 'admin'))
-      returning id, org_id, email, role
-    `,
-      [args.orgId, args.email.toLowerCase(), passwordHash, args.role ?? null]
-    );
+    return await args.db.transaction(async (trx: any) => {
+      const res = await trx.query(
+        `
+        insert into app_users (org_id, email, password_hash, role)
+        values ($1, $2, $3, coalesce($4, 'admin'))
+        returning id, org_id, email, role
+      `,
+        [args.orgId, args.email.toLowerCase(), passwordHash, args.role ?? null],
+      );
 
-    return res.rows[0];
+      const user = res.rows[0];
+      const roleKey = args.role ?? user.role;
+
+      // RBAC source of truth is app_user_roles; app_users.role remains legacy-only.
+      await trx.query(
+        `
+        insert into app_user_roles (user_id, role_id)
+        select $1, r.id
+        from app_roles r
+        where r.key = $2
+          and (r.org_id is null or r.org_id = $3)
+        on conflict do nothing
+      `,
+        [user.id, roleKey, user.org_id],
+      );
+
+      return user;
+    });
   } catch (error) {
     const err = error as { code?: string };
     if (err.code === "23505") {
@@ -44,7 +62,7 @@ export async function verifyLogin(args: {
 }) {
   const res = await args.db.query(
     `select id, org_id, email, role, password_hash from app_users where org_id = $1 and email = $2 limit 1`,
-    [args.orgId, args.email.toLowerCase()]
+    [args.orgId, args.email.toLowerCase()],
   );
 
   const user = res.rows[0];

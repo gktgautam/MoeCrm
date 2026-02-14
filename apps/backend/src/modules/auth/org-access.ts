@@ -12,7 +12,11 @@ export type OrgAccessOptions = {
   allowCrossOrgRoles?: readonly AppRole[];
 };
 
-export function resolveOrgIdFromRequest(req: FastifyRequest, options: OrgAccessOptions): number {
+export function resolveOrgIdFromRequest(
+  req: FastifyRequest,
+  options: OrgAccessOptions,
+  roleKeys: string[] = [],
+): number {
   if (!req.auth) {
     throw Errors.unauthorized();
   }
@@ -42,9 +46,9 @@ export function resolveOrgIdFromRequest(req: FastifyRequest, options: OrgAccessO
   }
 
   const sameOrg = requestedOrgId === authOrgId;
-  const crossOrgAllowed = roleAllowlist.includes(req.auth.role as AppRole);
+  const crossOrgAllowedByRole = roleAllowlist.some((role) => roleKeys.includes(role));
 
-  if (!sameOrg && !crossOrgAllowed) {
+  if (!sameOrg && !crossOrgAllowedByRole) {
     throw Errors.forbidden();
   }
 

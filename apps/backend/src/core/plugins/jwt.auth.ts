@@ -2,18 +2,16 @@ import fp from "fastify-plugin";
 import jwt from "@fastify/jwt";
 import type { FastifyReply } from "fastify";
 import { env } from "@/core/config/env";
-import type { AppRole } from "@/modules/auth";
-
 export type AuthTokenPayload = {
   sub: string;
   orgId: string;
-  role: AppRole;
 };
 
 declare module "fastify" {
   interface FastifyRequest {
     auth?: AuthTokenPayload;
     authPermissions?: string[];
+    authRoleKeys?: string[];
   }
 
   interface FastifyInstance {
