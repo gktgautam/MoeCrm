@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import PermissionGate from "@/core/rbac/PermissionGate";
-import { useAuth } from "@/features/auth/useAuth";
 
 export default function AuthPermissionGate({
   anyOf,
@@ -13,12 +12,11 @@ export default function AuthPermissionGate({
   children: ReactNode;
   fallback?: ReactNode;
 }) {
-  const { state } = useAuth();
-
-  if (state.status !== "authed") return <>{fallback}</>;
+  const allow = allOf ?? anyOf ?? [];
+  const mode: "all" | "any" = allOf ? "all" : "any";
 
   return (
-    <PermissionGate permissions={state.permissions ?? []} anyOf={anyOf} allOf={allOf} fallback={fallback}>
+    <PermissionGate allow={allow} mode={mode} fallback={fallback}>
       {children}
     </PermissionGate>
   );

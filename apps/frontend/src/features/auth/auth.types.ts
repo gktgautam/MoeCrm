@@ -16,6 +16,16 @@ export type AuthUser = {
 export type MeResponse = {
   ok: true;
   user: AuthUser;
+  role: Role;
   permissions: string[];
-  allowedRoutes: string[];
+  allowedRoutes?: string[];
+};
+
+export type LegacyMeResponse = {
+  ok: true;
+  data: {
+    user: AuthUser;
+    permissions?: string[];
+    allowedRoutes?: string[];
+  };
 };

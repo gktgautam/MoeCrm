@@ -5,6 +5,7 @@ export const SETTINGS_ROUTES: AppRoute[] = [
   {
     path: "/settings",
     navLabel: "Settings",
+    anyOf: ["settings:read"],
     element: <SettingsHome />,
   },
 ];

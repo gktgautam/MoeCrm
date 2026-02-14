@@ -14,6 +14,7 @@ declare module "fastify" {
   interface FastifyRequest {
     auth?: AuthTokenPayload;
     authPermissions?: string[];
+    authRoleKey?: string | null;
   }
 
   interface FastifyInstance {
@@ -75,16 +76,19 @@ export default fp(async (app) => {
   });
 
   app.addHook("preHandler", async (req) => {
-    req.log.info({ cookies: req.cookies, authz: req.headers.authorization }, "auth preHandler start");
+    req.log.info(
+      {
+        hasCookie: Boolean(req.cookies?.[AUTH_COOKIE_NAME]),
+        hasAuthHeader: typeof req.headers?.authorization === "string",
+      },
+      "auth preHandler start",
+    );
 
     const token = app.getAuthToken(req);
-    req.log.info({ hasToken: !!token }, "auth token extracted");
-
     if (!token) return;
 
     try {
       req.auth = app.verifyAuthToken(token);
-      req.log.info({ auth: req.auth }, "auth token verified");
     } catch (err) {
       req.log.warn({ err }, "auth token invalid");
       req.auth = undefined;

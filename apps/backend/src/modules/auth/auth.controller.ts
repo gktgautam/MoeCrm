@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { Errors } from "@/core/http/app-error";
 import type { SignupBody, LoginBody } from "./auth.schemas.js";
-import { fetchPermissionsForRole } from "./auth.permissions.js";
+import { getPermissionsForUser, getRoleKeyForUser } from "./auth.permissions.js";
 import { resolveAllowedRoutes } from "./auth.route-access.js";
 import { createAppUser, verifyLogin } from "./auth.service.js";
 
@@ -15,10 +15,15 @@ export const authController = {
       role: req.body.role,
     });
 
+    const roleKey = await getRoleKeyForUser(req.server, user.id, user.org_id);
+    if (!roleKey) {
+      throw Errors.unauthorized();
+    }
+
     const token = req.server.signAuthToken({
       sub: String(user.id),
       orgId: String(user.org_id),
-      role: user.role,
+      role: roleKey,
     });
 
     req.server.setAuthCookie(reply, token);
@@ -46,7 +51,7 @@ export const authController = {
     });
     req.server.setAuthCookie(reply, token);
 
-    return reply.code(200).send({ ok: true, data: { token } });
+    return reply.code(200).send({ ok: true, data: {} });
   },
 
   me: async (req: FastifyRequest) => {
@@ -57,35 +62,36 @@ export const authController = {
 
     const { rows } = await req.server.dbEngage.query(
       `
-      select id, org_id, email, first_name, last_name, role, status
-      from app_users
-      where id = $1 and org_id = $2
+      select u.id, u.org_id, u.email, u.first_name, u.last_name, u.status, r.key as role
+      from app_users u
+      join app_roles r on r.id = u.role_id
+      where u.id = $1 and u.org_id = $2
       limit 1
       `,
-      [userId, orgId]
+      [userId, orgId],
     );
 
     const user = rows[0];
     if (!user) throw Errors.unauthorized();
 
-    const permissions = await fetchPermissionsForRole(req.server, user.role);
+    const role = user.role;
+    const permissions = await getPermissionsForUser(req.server, user.id, user.org_id);
     const allowedRoutes = resolveAllowedRoutes(permissions);
 
     return {
       ok: true,
-      data: {
-        user: {
-          id: user.id,
-          orgId: user.org_id,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role,
-          status: user.status,
-        },
-        permissions,
-        allowedRoutes,
+      user: {
+        id: user.id,
+        orgId: user.org_id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role,
+        status: user.status,
       },
+      role,
+      permissions,
+      allowedRoutes,
     };
   },
 

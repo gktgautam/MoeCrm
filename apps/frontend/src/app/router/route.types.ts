@@ -4,4 +4,6 @@ export type AppRoute = {
   path: string;
   element: ReactNode;
   navLabel?: string;
+  anyOf?: string[];
+  allOf?: string[];
 };

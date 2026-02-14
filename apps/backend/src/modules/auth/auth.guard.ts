@@ -3,7 +3,8 @@ import { Errors } from "@/core/http/app-error";
 import type { AuthTokenPayload } from "@/core/plugins/jwt.auth";
 import type { AppRole } from "./auth.types.js";
 import {
-  fetchPermissionsForRole,
+  getPermissionsForUser,
+  getRoleKeyForUser,
   permissionMatches,
   type PermissionRequirement,
 } from "./auth.permissions.js";
@@ -13,8 +14,22 @@ async function getRequestPermissions(req: any): Promise<string[]> {
   if (!req.auth) return [];
   if (Array.isArray(req.authPermissions)) return req.authPermissions;
 
-  req.authPermissions = await fetchPermissionsForRole(req.server, req.auth.role);
+  const userId = Number(req.auth.sub);
+  const orgId = Number(req.auth.orgId);
+
+  req.authPermissions = await getPermissionsForUser(req.server, userId, orgId);
   return req.authPermissions;
+}
+
+async function getRequestRole(req: any): Promise<string | null> {
+  if (!req.auth) return null;
+  if (typeof req.authRoleKey === "string") return req.authRoleKey;
+
+  const userId = Number(req.auth.sub);
+  const orgId = Number(req.auth.orgId);
+  req.authRoleKey = await getRoleKeyForUser(req.server, userId, orgId);
+
+  return req.authRoleKey;
 }
 
 export const requireAuth: preHandlerHookHandler = async (req) => {
@@ -29,7 +44,8 @@ export function requireRole(roles: AuthTokenPayload["role"][]): preHandlerHookHa
       throw Errors.unauthorized();
     }
 
-    if (!roles.includes(req.auth.role)) {
+    const roleKey = await getRequestRole(req);
+    if (!roleKey || !roles.includes(roleKey as AuthTokenPayload["role"])) {
       throw Errors.forbidden();
     }
   };

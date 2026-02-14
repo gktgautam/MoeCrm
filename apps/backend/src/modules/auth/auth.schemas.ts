@@ -31,18 +31,17 @@ export type LoginBody = Static<typeof loginBodySchema>;
 
 export const meResponseSchema = Type.Object({
   ok: Type.Literal(true),
-  data: Type.Object({
-    user: Type.Object({
-      id: Type.Number(),
-      orgId: Type.Number(),
-      email: Type.String({ format: "email" }),
-      firstName: Type.Optional(Type.String()),
-      lastName: Type.Optional(Type.String()),
-      role: Role,
-      status: Type.Optional(Type.String()),
-    }),
-    permissions: Type.Array(Type.String()),
-    allowedRoutes: Type.Array(Type.String()),
+  user: Type.Object({
+    id: Type.Number(),
+    orgId: Type.Number(),
+    email: Type.String({ format: "email" }),
+    firstName: Type.Optional(Type.String()),
+    lastName: Type.Optional(Type.String()),
+    role: Role,
+    status: Type.Optional(Type.String()),
   }),
+  role: Role,
+  permissions: Type.Array(Type.String()),
+  allowedRoutes: Type.Array(Type.String()),
 });
 export type MeResponse = Static<typeof meResponseSchema>;

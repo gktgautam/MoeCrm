@@ -5,6 +5,7 @@ export const DASHBOARD_ROUTES: AppRoute[] = [
   {
     path: "/",
     navLabel: "Dashboard",
+    anyOf: ["analytics:read", "campaigns:read", "segments:read", "users:read", "settings:read"],
     element: <DashboardHome />,
   },
 ];

@@ -5,6 +5,7 @@ export const ANALYTICS_ROUTES: AppRoute[] = [
   {
     path: "/analytics",
     navLabel: "Analytics",
+    anyOf: ["analytics:read"],
     element: <AnalyticsOverview />,
   },
 ];

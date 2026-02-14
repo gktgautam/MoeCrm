@@ -5,6 +5,7 @@ export const SEGMENTS_ROUTES: AppRoute[] = [
   {
     path: "/segments",
     navLabel: "Segments",
+    anyOf: ["segments:read"],
     element: <SegmentsList />,
   },
 ];

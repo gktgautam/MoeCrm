@@ -5,6 +5,7 @@ export const CAMPAIGNS_ROUTES: AppRoute[] = [
   {
     path: "/campaigns",
     navLabel: "Campaigns",
+    anyOf: ["campaigns:read"],
     element: <CampaignsList />,
   },
 ];

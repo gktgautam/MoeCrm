@@ -6,6 +6,7 @@ exports.seed = async function seed(knex) {
   await knex("app_users").del();
 
   const passwordHash = await argon2.hash("Password@123"); // dev password
+  const adminRole = await knex("app_roles").where({ org_id: 1, key: "admin" }).first("id");
 
   await knex("app_users").insert([
     {
@@ -17,6 +18,7 @@ exports.seed = async function seed(knex) {
       password_hash: passwordHash,
       auth_provider: "password",
       role: "admin",
+      role_id: adminRole?.id ?? null,
       status: "active",
       invited_at: knex.fn.now(),
       last_login_at: null,

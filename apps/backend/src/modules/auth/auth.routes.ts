@@ -12,9 +12,7 @@ const EmptySuccessResponseSchema = Type.Object({
 
 const LoginResponseSchema = Type.Object({
   ok: Type.Literal(true),
-  data: Type.Object({
-    token: Type.String(),
-  }),
+  data: Type.Object({}),
 });
 
 const authRoutes: FastifyPluginAsync = async (app) => {

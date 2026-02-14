@@ -2,6 +2,26 @@ import { Errors } from "@/core/http/app-error";
 import argon2 from "argon2";
 import type { AppRole } from "./auth.types.js";
 
+async function resolveRoleId(db: any, orgId: number, role: AppRole | undefined) {
+  const roleKey = role ?? "admin";
+  const roleRes = await db.query(
+    `
+      select id
+      from app_roles
+      where org_id = $1 and key = $2
+      limit 1
+    `,
+    [orgId, roleKey],
+  );
+
+  const roleRow = roleRes.rows[0] as { id: number } | undefined;
+  if (!roleRow) {
+    throw Errors.badRequest("Invalid role");
+  }
+
+  return roleRow.id;
+}
+
 export async function createAppUser(args: {
   db: any;
   orgId: number;
@@ -16,14 +36,16 @@ export async function createAppUser(args: {
     parallelism: 1,
   });
 
+  const roleId = await resolveRoleId(args.db, args.orgId, args.role);
+
   try {
     const res = await args.db.query(
       `
-      insert into app_users (org_id, email, password_hash, role)
-      values ($1, $2, $3, coalesce($4, 'admin'))
-      returning id, org_id, email, role
+      insert into app_users (org_id, email, password_hash, role_id)
+      values ($1, $2, $3, $4)
+      returning id, org_id, email, role_id
     `,
-      [args.orgId, args.email.toLowerCase(), passwordHash, args.role ?? null]
+      [args.orgId, args.email.toLowerCase(), passwordHash, roleId],
     );
 
     return res.rows[0];
@@ -43,8 +65,14 @@ export async function verifyLogin(args: {
   password: string;
 }) {
   const res = await args.db.query(
-    `select id, org_id, email, role, password_hash from app_users where org_id = $1 and email = $2 limit 1`,
-    [args.orgId, args.email.toLowerCase()]
+    `
+      select u.id, u.org_id, u.email, r.key as role, u.password_hash
+      from app_users u
+      join app_roles r on r.id = u.role_id
+      where u.org_id = $1 and u.email = $2
+      limit 1
+    `,
+    [args.orgId, args.email.toLowerCase()],
   );
 
   const user = res.rows[0];

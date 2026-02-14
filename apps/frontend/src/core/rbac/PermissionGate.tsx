@@ -1,29 +1,27 @@
-// src/core/rbac/PermissionGate.tsx
 import type { ReactNode } from "react";
-import { hasPermission } from "@/core/rbac/permissions";
+import { useAuth } from "@/features/auth";
 
 /**
  * PermissionGate
- * UI show/hide based on provided permissions.
+ * Conditionally render UI based on auth state and permission requirements.
  */
 export default function PermissionGate({
-  permissions,
-  anyOf,
-  allOf,
+  allow,
+  mode = "all",
   children,
   fallback = null,
 }: {
-  permissions: string[];
-  anyOf?: string[];
-  allOf?: string[];
+  allow: string[];
+  mode?: "all" | "any";
   children: ReactNode;
   fallback?: ReactNode;
 }) {
-  const okAny =
-    !anyOf || anyOf.length === 0 ? true : anyOf.some((p) => hasPermission(permissions, p));
+  const { state, hasPermissionFor } = useAuth();
 
-  const okAll =
-    !allOf || allOf.length === 0 ? true : allOf.every((p) => hasPermission(permissions, p));
+  if (state.status !== "authed") {
+    return <>{fallback}</>;
+  }
 
-  return <>{okAny && okAll ? children : fallback}</>;
+  const isAllowed = hasPermissionFor(allow, mode);
+  return <>{isAllowed ? children : fallback}</>;
 }
