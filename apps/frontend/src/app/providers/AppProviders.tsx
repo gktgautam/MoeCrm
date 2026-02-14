@@ -5,7 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 import ToastProvider from "@/app/providers/ToastProvider";
-import { queryClient } from "@/core/api/queryClient";
+import { queryClient } from "@/core/http/queryClient";
 import { AuthProvider } from "@/features/auth";
 
 import { muiTheme } from "@/theme/muiTheme";

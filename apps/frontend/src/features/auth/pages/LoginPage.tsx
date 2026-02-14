@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/useAuth";
-import { getApiErrorMessage, getApiErrorCode, getApiRequestId } from "@/core/api/api-error";
+import { getApiErrorMessage, getApiErrorCode, getApiRequestId } from "@/core/http/api-error";
 
 import {
   Alert,

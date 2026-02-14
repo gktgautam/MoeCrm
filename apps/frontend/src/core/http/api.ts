@@ -1,6 +1,6 @@
 import axios from "axios";
-import { appConfig } from "@/app/config/app-config";
-import { queryClient } from "@/core/api/queryClient";
+import { appConfig } from "@/app/config/env";
+import { queryClient } from "@/core/http/queryClient";
 import { toast } from "@/core/ui/toast";
 
 export const api = axios.create({

@@ -4,7 +4,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 
-import { getApiErrorMessage, getApiRequestId } from "@/core/api/api-error";
+import { getApiErrorMessage, getApiRequestId } from "@/core/http/api-error";
 
 export default function RouteError() {
   const err = useRouteError();

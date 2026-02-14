@@ -5,8 +5,8 @@ import {
   type ReactNode,
   useCallback,
 } from "react";
-import { api } from "@/core/api/api";
-import { queryClient } from "@/core/api/queryClient";
+import { api } from "@/core/http/api";
+import { queryClient } from "@/core/http/queryClient";
 import type { LegacyMeResponse, MeResponse, Role } from "./auth.types";
 import { hasPermission } from "@/core/rbac/permissions";
 import { AuthContext, type AuthContextValue, type AuthState, type LoginPayload } from "./auth.context";

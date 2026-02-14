@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { NAV } from "@/core/layout/navigation";
+import { NAV } from "@/app/layouts/navigation";
 
 export default function Sidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
   return (
