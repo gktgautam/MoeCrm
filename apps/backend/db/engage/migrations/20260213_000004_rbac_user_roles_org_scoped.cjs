@@ -72,10 +72,21 @@ exports.down = async function down(knex) {
     DROP INDEX IF EXISTS app_role_permissions_permission_id_idx;
   `);
 
-  // Best-effort rollback: this constraint restore can fail if duplicate keys were created while org-scoped roles existed.
+  // Restore legacy UNIQUE(key) only when rollback-safe (no duplicate keys currently exist).
   await knex.schema.raw(`
-    ALTER TABLE app_roles
-    ADD CONSTRAINT app_roles_key_unique UNIQUE (key);
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT key
+        FROM app_roles
+        GROUP BY key
+        HAVING COUNT(*) > 1
+      ) THEN
+        ALTER TABLE app_roles
+        ADD CONSTRAINT app_roles_key_unique UNIQUE (key);
+      END IF;
+    END
+    $$;
   `);
 
   await knex.schema.alterTable("app_roles", (t) => {
