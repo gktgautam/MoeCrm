@@ -1,3 +1,4 @@
+import { Errors } from "@/core/http/app-error";
 import type { FastifyInstance } from "fastify";
 
 export type PermissionRequirement = {
@@ -61,7 +62,7 @@ export async function assertRoleAssignableToOrg(
   );
 
   if (!rows[0]) {
-    throw new Error("Role is not assignable to the target user's org");
+    throw Errors.forbidden("ROLE_NOT_ASSIGNABLE_TO_ORG");
   }
 }
 

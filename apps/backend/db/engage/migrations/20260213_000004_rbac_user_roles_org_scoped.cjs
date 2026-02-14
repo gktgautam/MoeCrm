@@ -7,18 +7,18 @@ exports.up = async function up(knex) {
   await knex.schema.raw(`
     CREATE UNIQUE INDEX IF NOT EXISTS app_roles_unique_system_key
     ON app_roles (key)
-    WHERE org_id IS NULL
+    WHERE org_id IS NULL;
   `);
 
   await knex.schema.raw(`
     CREATE UNIQUE INDEX IF NOT EXISTS app_roles_unique_org_key
     ON app_roles (org_id, key)
-    WHERE org_id IS NOT NULL
+    WHERE org_id IS NOT NULL;
   `);
 
   await knex.schema.raw(`
     ALTER TABLE app_roles
-    DROP CONSTRAINT IF EXISTS app_roles_key_unique
+    DROP CONSTRAINT IF EXISTS app_roles_key_unique;
   `);
 
   await knex.schema.createTable("app_user_roles", (t) => {
@@ -29,22 +29,22 @@ exports.up = async function up(knex) {
 
   await knex.schema.raw(`
     CREATE INDEX IF NOT EXISTS app_user_roles_user_id_idx
-    ON app_user_roles (user_id)
+    ON app_user_roles (user_id);
   `);
 
   await knex.schema.raw(`
     CREATE INDEX IF NOT EXISTS app_user_roles_role_id_idx
-    ON app_user_roles (role_id)
+    ON app_user_roles (role_id);
   `);
 
   await knex.schema.raw(`
     CREATE INDEX IF NOT EXISTS app_role_permissions_role_id_idx
-    ON app_role_permissions (role_id)
+    ON app_role_permissions (role_id);
   `);
 
   await knex.schema.raw(`
     CREATE INDEX IF NOT EXISTS app_role_permissions_permission_id_idx
-    ON app_role_permissions (permission_id)
+    ON app_role_permissions (permission_id);
   `);
 
   await knex.schema.raw(`
@@ -54,33 +54,28 @@ exports.up = async function up(knex) {
     JOIN app_roles r
       ON r.key = u.role::text
      AND r.org_id IS NULL
-    ON CONFLICT DO NOTHING
+    ON CONFLICT DO NOTHING;
   `);
 };
 
 exports.down = async function down(knex) {
   await knex.schema.dropTableIfExists("app_user_roles");
 
-  await knex.schema.raw(`DROP INDEX IF EXISTS app_roles_unique_org_key`);
-  await knex.schema.raw(`DROP INDEX IF EXISTS app_roles_unique_system_key`);
+  await knex.schema.raw(`DROP INDEX IF EXISTS app_roles_unique_org_key;`);
+  await knex.schema.raw(`DROP INDEX IF EXISTS app_roles_unique_system_key;`);
 
   await knex.schema.raw(`
-    DROP INDEX IF EXISTS app_role_permissions_role_id_idx
+    DROP INDEX IF EXISTS app_role_permissions_role_id_idx;
   `);
 
   await knex.schema.raw(`
-    DROP INDEX IF EXISTS app_role_permissions_permission_id_idx
+    DROP INDEX IF EXISTS app_role_permissions_permission_id_idx;
   `);
 
-
-  await knex.schema.raw(`
-    DELETE FROM app_roles
-    WHERE org_id IS NOT NULL
-  `);
-
+  // Best-effort rollback: this constraint restore can fail if duplicate keys were created while org-scoped roles existed.
   await knex.schema.raw(`
     ALTER TABLE app_roles
-    ADD CONSTRAINT app_roles_key_unique UNIQUE (key)
+    ADD CONSTRAINT app_roles_key_unique UNIQUE (key);
   `);
 
   await knex.schema.alterTable("app_roles", (t) => {
