@@ -57,10 +57,12 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(dbEngagePgPlugin);
   await app.register(dbEngageKnexPlugin);
 
+  registerErrorHandling(app);
+
   // --- Routes ---
   await app.register(routes);
 
-  registerErrorHandling(app);
+
 
   return app;
 }

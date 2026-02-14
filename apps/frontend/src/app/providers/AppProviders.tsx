@@ -3,6 +3,8 @@ import { type ReactNode } from "react";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { QueryClientProvider } from "@tanstack/react-query";
+import ToastProvider from "@/app/providers/ToastProvider";
+
 
 import { theme } from "./theme";
 import { queryClient } from "@/core/api/queryClient";
@@ -13,9 +15,11 @@ export default function AppProviders({ children }: { children: ReactNode }) {
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+        <ToastProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>{children}</AuthProvider>
         </QueryClientProvider>
+        </ToastProvider>
       </ThemeProvider>
     </StyledEngineProvider>
   );

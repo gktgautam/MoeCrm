@@ -1,71 +1,198 @@
 // src/features/auth/pages/LoginPage.tsx
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/useAuth";
+import { getApiErrorMessage, getApiErrorCode, getApiRequestId } from "@/core/api/api-error";
+
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  IconButton,
+  InputAdornment,
+  Link,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
- 
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const getErrorMessage = (error: unknown) => {
-    if (typeof error === "object" && error !== null && "response" in error) {
-      const maybeResponse = (error as { response?: { data?: { error?: string } } }).response;
-      return maybeResponse?.data?.error ?? "LOGIN_FAILED";
-    }
+  const emailError = useMemo(() => {
+    if (!email) return "";
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    return ok ? "" : "Enter a valid email";
+  }, [email]);
 
-    return "LOGIN_FAILED";
-  };
+  const canSubmit = !loading && !!email && !!password && !emailError;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
     setLoading(true);
+
     try {
-      await login({ email, password });
+      // ✅ normalize email to avoid invisible failures (spaces/case)
+      const safeEmail = email.trim().toLowerCase();
+
+      await login({ email: safeEmail, password });
       navigate("/", { replace: true });
     } catch (error: unknown) {
-      setErr(getErrorMessage(error));
+      // ✅ IMPORTANT: pass the caught error (not event)
+      const msg = getApiErrorMessage(error);
+      const code = getApiErrorCode(error);
+      const rid = getApiRequestId(error);
+
+      setErr(rid ? `${msg} (${code ?? "ERROR"}) [${rid}]` : msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Login</h1>
-
-      {err ? <div className="text-red-600 text-sm">{err}</div> : null}
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-       
-        <input
-          className="border rounded px-3 py-2"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          className="border rounded px-3 py-2"
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <button
-          className="bg-black text-white rounded px-3 py-2 disabled:opacity-60"
-          type="submit"
-          disabled={loading}
+    <Box
+      sx={{
+        minHeight: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        py: { xs: 6, md: 10 },
+        bgcolor: (t) => (t.palette.mode === "dark" ? "background.default" : "#f6f7fb"),
+      }}
+    >
+      <Container maxWidth="sm">
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 3, sm: 4 },
+            borderRadius: 3,
+            border: "1px solid",
+            borderColor: "divider",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.06)",
+          }}
         >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
-    </div>
+          <Stack spacing={3}>
+            <Box>
+              <Typography variant="h5" fontWeight={700}>
+                Welcome back
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Sign in to continue to your dashboard.
+              </Typography>
+            </Box>
+
+            {err ? (
+              <Alert severity="error" variant="outlined">
+                {err}
+              </Alert>
+            ) : null}
+
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+              <Stack spacing={2.25}>
+                <TextField
+                  label="Email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  fullWidth
+                  error={!!emailError}
+                  helperText={emailError || " "}
+                />
+
+                <TextField
+                  label="Password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  type={showPass ? "text" : "password"}
+                  autoComplete="current-password"
+                  fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label={showPass ? "Hide password" : "Show password"}
+                          onClick={() => setShowPass((s) => !s)}
+                          edge="end"
+                        >
+                          {showPass ? <VisibilityOffRoundedIcon /> : <VisibilityRoundedIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Use your work account
+                  </Typography>
+
+                  <Link
+                    component="button"
+                    type="button"
+                    underline="hover"
+                    sx={{ fontSize: 14 }}
+                    onClick={() => {
+                      // navigate("/forgot-password")
+                    }}
+                  >
+                    Forgot password?
+                  </Link>
+                </Box>
+
+                <Button
+                  type="submit"
+                  size="large"
+                  variant="contained"
+                  disableElevation
+                  disabled={!canSubmit}
+                  sx={{
+                    py: 1.2,
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 700,
+                  }}
+                  startIcon={loading ? <CircularProgress size={18} /> : null}
+                >
+                  {loading ? "Signing in..." : "Sign in"}
+                </Button>
+
+                <Typography variant="caption" color="text.secondary" sx={{ textAlign: "center" }}>
+                  By continuing, you agree to the Terms & Privacy Policy.
+                </Typography>
+              </Stack>
+            </Box>
+          </Stack>
+        </Paper>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: "center" }}>
+          Need access?{" "}
+          <Link
+            component="button"
+            type="button"
+            underline="hover"
+            onClick={() => {
+              // navigate("/request-access")
+            }}
+          >
+            Request access
+          </Link>
+        </Typography>
+      </Container>
+    </Box>
   );
 }
