@@ -63,23 +63,16 @@ export default function LoginPage() {
   return (
     <div className="p-10 md:min-w-100 min-w-full rounded-2xl">
       
-      <div className=" p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-[0_12px_30px_rgba(0,0,0,0.06)] ">
+      <div className=" p-6 sm:p-8 bg-white rounded-2xl border border-gray-200 shadow-[0_12px_30px_rgba(0,0,0,0.06)] ">
 
           <div className=" flex flex-col gap-4">
             
-            <div>
+            <div className="mb-8">
               <h1 className="text-2xl font-semibold">Welcome back</h1>
               <p>Sign in to continue to your dashboard.</p>
             </div>
             
-            <Box>
-              <Typography variant="h5" fontWeight={700}>
-                Welcome back
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                Sign in to continue to your dashboard.
-              </Typography>
-            </Box>
+            
 
             
 

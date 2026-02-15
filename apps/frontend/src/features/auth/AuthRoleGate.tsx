@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 import RoleGate from "@/core/rbac/RoleGate";
-import { useAuth, type Role } from "@/features/auth"; 
+import { useAuth } from "@/features/auth";
+ 
 
 export default function AuthRoleGate({
   allow,
   children,
   fallback = null,
 }: {
-  allow: Role[];
+  allow: any;
   children: ReactNode;
   fallback?: ReactNode;
 }) {

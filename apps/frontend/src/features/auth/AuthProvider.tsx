@@ -7,47 +7,26 @@ import {
 } from "react";
 import { api } from "@/core/http/api";
 import { queryClient } from "@/core/http/queryClient";
-import type { LegacyMeResponse, MeResponse, Role } from "./auth.types";
+ 
+
+
 import { hasPermission } from "@/core/rbac/permissions";
 import { AuthContext, type AuthContextValue, type AuthState, type LoginPayload } from "./auth.context";
 
-type NormalizedMe = {
-  user: MeResponse["user"];
-  role: Role;
-  permissions: string[];
-  allowedRoutes: string[];
-};
-
-function normalizeMeResponse(payload: MeResponse | LegacyMeResponse): NormalizedMe {
-  if ("data" in payload) {
-    return {
-      user: payload.data.user,
-      role: payload.data.user.role,
-      permissions: payload.data.permissions ?? [],
-      allowedRoutes: payload.data.allowedRoutes ?? ["/"],
-    };
-  }
-
-  return {
-    user: payload.user,
-    role: payload.role,
-    permissions: payload.permissions ?? [],
-    allowedRoutes: payload.allowedRoutes ?? ["/"],
-  };
-}
+ 
+ 
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: "loading" });
 
   const refreshMe = useCallback(async () => {
-    const { data } = await api.get<MeResponse | LegacyMeResponse>("/auth/me");
-    const me = normalizeMeResponse(data);
-    setState({
+    const { data } = await api.get("/auth/me");
+     setState({
       status: "authed",
-      user: { ...me.user, role: me.role },
-      role: me.role,
-      permissions: me.permissions,
-      allowedRoutes: me.allowedRoutes,
+      user: data.user,
+      role: data.role,
+      permissions: data.permissions,
+      allowedRoutes: data.allowedRoutes,
     });
   }, []);
 
@@ -56,16 +35,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     (async () => {
       try {
-        const { data } = await api.get<MeResponse | LegacyMeResponse>("/auth/me");
-        const me = normalizeMeResponse(data);
-
+        const { data } = await api.get("/auth/me");
+ 
         if (!cancelled) {
           setState({
             status: "authed",
-            user: { ...me.user, role: me.role },
-            role: me.role,
-            permissions: me.permissions,
-            allowedRoutes: me.allowedRoutes,
+            user: data.user,
+            role: data.role,
+            permissions: data.permissions,
+            allowedRoutes: data.allowedRoutes,
           });
         }
       } catch {
@@ -106,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const hasRole = useCallback(
-    (roles: Role[]) => {
+    (roles: any) => {
       if (state.status !== "authed") return false;
       return roles.includes(state.role);
     },

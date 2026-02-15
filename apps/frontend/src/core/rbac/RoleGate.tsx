@@ -1,6 +1,5 @@
 // src/core/rbac/RoleGate.tsx
-import type { ReactNode } from "react";
-import type { Role } from "@/shared/types/auth";
+import type { ReactNode } from "react"; ; 
 
 export default function RoleGate({
   role,
@@ -8,8 +7,8 @@ export default function RoleGate({
   children,
   fallback = null,
 }: {
-  role?: Role;
-  allow: Role[];
+  role?: any;
+  allow: any;
   children: ReactNode;
   fallback?: ReactNode;
 }) {

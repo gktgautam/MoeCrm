@@ -1,56 +1,113 @@
 // src/theme/muiTheme.ts
-import { createTheme } from "@mui/material/styles";
+import { extendTheme } from "@mui/material/styles";
 
-const rgb = (v: string) => `rgb(var(${v}) / 1)`;
-const rgba = (v: string, a: number) => `rgb(var(${v}) / ${a})`;
+export const muiTheme = extendTheme({
+  cssVarPrefix: "app",
+ colorSchemeSelector: "class",
+  colorSchemes: {
+    light: {
+      palette: {
+        primary: {
+          main: "#18181b",
+          light: "#3f3f46",
+          dark: "#09090b",
+          contrastText: "#fafafa",
+        },
+        secondary: {
+          main: "#71717a",
+          light: "#a1a1aa",
+          dark: "#52525b",
+          contrastText: "#fafafa",
+        },
+        success: { main: "#10b981" },
+        warning: { main: "#f59e0b" },
+        error: { main: "#ef4444" },
+        info: { main: "#3b82f6" },
 
-export const muiTheme = createTheme({
-  palette: {
-    mode: "light",
-    primary: { main: rgb("--c-primary"), contrastText: rgb("--c-primary-contrast") },
-    secondary: { main: rgb("--c-secondary") },
-    success: { main: rgb("--c-success") },
-    warning: { main: rgb("--c-warning") },
-    error: { main: rgb("--c-danger") },
-    info: { main: rgb("--c-info") },
-    background: { default: rgb("--c-bg"), paper: rgb("--c-surface") },
-    text: { primary: rgb("--c-text"), secondary: rgb("--c-muted") },
-    divider: rgba("--c-border", 1),
+        background: { default: "#fafafa", paper: "#ffffff" },
+        text: { primary: "#09090b", secondary: "#71717a" },
+        divider: "#e4e4e7",
+      },
+    },
+
+    dark: {
+      palette: {
+        primary: {
+          main: "#fafafa",
+          light: "#ffffff",
+          dark: "#e4e4e7",
+          contrastText: "#09090b",
+        },
+        secondary: {
+          main: "#a1a1aa",
+          light: "#d4d4d8",
+          dark: "#71717a",
+          contrastText: "#09090b",
+        },
+        success: { main: "#10b981" },
+        warning: { main: "#f59e0b" },
+        error: { main: "#ef4444" },
+        info: { main: "#60a5fa" },
+
+        background: { default: "#09090b", paper: "#18181b" },
+        text: { primary: "#fafafa", secondary: "#a1a1aa" },
+        divider: "#27272a",
+      },
+    },
   },
+
   shape: { borderRadius: 8 },
+
   typography: {
     fontFamily:
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     button: { textTransform: "none", fontWeight: 600 },
   },
+
   components: {
-    MuiCard: {
+    MuiCssBaseline: {
       styleOverrides: {
-        root: {
-          borderRadius: "var(--radius-lg)",
-          boxShadow: "var(--shadow-sm)",
-          border: `1px solid ${rgba("--c-border", 1)}`,
+        body: {
+          // keep body clean; Tailwind also uses tokens
+          margin: 0,
         },
       },
     },
+
+    MuiButtonBase: { defaultProps: { disableRipple: true } },
+
+    MuiButton: {
+      defaultProps: { disableElevation: true, disableRipple: true },
+      styleOverrides: {
+        root: {
+          borderRadius: 6,
+          fontWeight: 600,
+          transition: "all .15s ease",
+        },
+      },
+    },
+
     MuiPaper: {
       styleOverrides: {
         root: {
           backgroundImage: "none",
-          borderRadius: "var(--radius-lg)",
-          border: `1px solid ${rgba("--c-border", 1)}`,
+          borderRadius: 12,
+          border: "1px solid var(--app-palette-divider)",
         },
       },
     },
-    MuiButton: {
-      defaultProps: { disableElevation: true, disableRipple: true },
+
+    MuiCard: {
       styleOverrides: {
-        root: { borderRadius: "var(--radius-sm)", fontWeight: 600 },
-        contained: {
-          boxShadow: "var(--shadow-sm)",
-          "&:hover": { boxShadow: "var(--shadow-md)" },
+        root: {
+          borderRadius: 12,
+          border: "1px solid var(--app-palette-divider)",
+          boxShadow: "var(--app-shadows-2)",
         },
       },
     },
+
+    MuiTextField: { defaultProps: { size: "small" } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 6 } } },
   },
 });
