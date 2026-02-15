@@ -36,6 +36,11 @@ api.interceptors.response.use(
       }
     }
 
+    if (status && status !== 401) {
+      const message = error?.response?.data?.error?.message as string | undefined;
+      toast.error(message ?? "Request failed. Please try again.");
+    }
+
     // ✅ IMPORTANT: never throw/return response.data here
     // Keep the original AxiosError so helpers can read response.data.error.message
     return Promise.reject(error);

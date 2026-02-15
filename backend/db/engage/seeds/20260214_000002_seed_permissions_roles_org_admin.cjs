@@ -31,6 +31,8 @@ exports.seed = async function seed(knex) {
     // users / roles
     { key: "users:read", module: "users", action: "read", description: "View users" },
     { key: "users:manage", module: "users", action: "manage", description: "Invite/disable users" },
+    { key: "roles:read", module: "roles", action: "read", description: "View roles" },
+    { key: "roles:manage", module: "roles", action: "manage", description: "Manage roles + grants" },
 
     // settings / billing
     { key: "settings:read", module: "settings", action: "read", description: "View settings" },

@@ -13,6 +13,8 @@ export const APP_ROUTE_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "/templates": { anyOf: ["analytics:read"] },
   "/products": { anyOf: ["analytics:read"] },
   "/settings": { anyOf: ["settings:read"] },
+  "/settings/users": { anyOf: ["users:read", "users:manage"] },
+  "/settings/roles": { anyOf: ["roles:read", "roles:manage"] },
 
  
 };
