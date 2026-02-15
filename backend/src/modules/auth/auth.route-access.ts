@@ -10,7 +10,11 @@ export const APP_ROUTE_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "/segments": { anyOf: ["segments:read"] },
   "/campaigns": { anyOf: ["campaigns:read"] },
   "/analytics": { anyOf: ["analytics:read"] },
+  "/templates": { anyOf: ["analytics:read"] },
+  "/products": { anyOf: ["analytics:read"] },
   "/settings": { anyOf: ["settings:read"] },
+
+ 
 };
 
 function requirementMatches(permissions: string[], requirement: PermissionRequirement): boolean {
