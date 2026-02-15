@@ -1,4 +1,4 @@
-// apps/backend/db/engage/migrations/20260214_000002_seed_permissions_roles_org_admin.cjs
+// backend/db/engage/migrations/20260214_000002_seed_permissions_roles_org_admin.cjs
 const argon2 = require("argon2");
 
 exports.seed = async function seed(knex) {

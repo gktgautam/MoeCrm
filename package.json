@@ -2,14 +2,15 @@
   "name": "equeengage",
   "private": true,
   "workspaces": [
-    "apps/*" 
+    "frontend",
+    "backend"
   ],
   "scripts": {
-    "dev:frontend": "npm --workspace apps/frontend run dev",
-    "dev:backend": "npm --workspace apps/backend run dev",
+    "dev:frontend": "npm --workspace frontend run dev",
+    "dev:backend": "npm --workspace backend run dev",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "build:frontend": "npm --workspace apps/frontend run build",
-    "build:backend": "npm --workspace apps/backend run build",
+    "build:frontend": "npm --workspace frontend run build",
+    "build:backend": "npm --workspace backend run build",
     "lint": "npm -ws run lint",
     "test": "npm -ws run test",
     "check:structure": "node scripts/validate-structure.mjs"

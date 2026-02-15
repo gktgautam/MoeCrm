@@ -1,4 +1,4 @@
-// apps/backend/db/engage/migrations/20260214_000001_init_core_rbac.cjs
+// backend/db/engage/migrations/20260214_000001_init_core_rbac.cjs
 
 exports.up = async function up(knex) {
   await knex.schema.raw(`CREATE EXTENSION IF NOT EXISTS citext;`);

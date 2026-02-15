@@ -2,7 +2,7 @@
 
 ## Structure
 
-`apps/frontend/src` is organized as:
+`frontend/src` is organized as:
 
 - `app/`: top-level composition (providers, layouts, router, app-level guards/pages/config).
 - `core/`: cross-cutting app infrastructure (API client, RBAC primitives, layout/navigation shell).

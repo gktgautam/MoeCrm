@@ -2,7 +2,7 @@
 
 ## Architecture and placement rules
 
-`apps/backend/src` is organized by responsibility:
+`backend/src` is organized by responsibility:
 
 - `app/`: app bootstrap and HTTP composition (wiring only).
 - `core/`: platform/cross-cutting code (config, plugins, logging, global HTTP error handling).
@@ -10,7 +10,7 @@
 - `shared/`: pure helpers only.
 - `types/`: ambient/global type declarations.
 
-DB migration assets are outside `src` in `apps/backend/db`.
+DB migration assets are outside `src` in `backend/db`.
 
 ### Dependency boundaries (enforced)
 

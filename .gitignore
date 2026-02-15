@@ -26,12 +26,12 @@ pnpm-debug.log*
 # Build outputs
 # =========================
 # Frontend (Vite)
-apps/frontend/dist/
-apps/frontend/.vite/
+frontend/dist/
+frontend/.vite/
 
 # Backend (TS build)
-apps/api/dist/
-apps/api/.tsbuildinfo
+backend/dist/
+backend/.tsbuildinfo
 
 # =========================
 # Coverage / test
