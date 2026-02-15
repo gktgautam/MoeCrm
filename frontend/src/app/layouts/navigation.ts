@@ -1,10 +1,27 @@
-import { APP_ROUTES } from "@/app/router/app-routes";
+import { FEATURE_ROUTES, type AppRoute } from "@/app/router";
 
 export type NavItem = {
   label: string;
   to: string;
+  children?: NavItem[];
 };
 
-export const NAV: NavItem[] = APP_ROUTES.flatMap((route) =>
-  route.navLabel ? [{ label: route.navLabel, to: route.path }] : []
-);
+  
+function buildNav(routes: AppRoute[]): NavItem[] {
+  return routes
+    .filter((route) => route.navLabel) // ensure label exists
+    .map((route) => {
+      const item: NavItem = {
+        label: route.navLabel!, // safe because filtered above
+        to: route.path
+      };
+
+      if (route.children && route.children.length > 0) {
+        item.children = buildNav(route.children);
+      }
+
+      return item;
+    });
+}
+
+export const NAV: NavItem[] = buildNav(FEATURE_ROUTES as AppRoute[]);

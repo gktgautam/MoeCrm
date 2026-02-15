@@ -26,27 +26,38 @@ exports.seed = async function seed(knex) {
 
     // analytics
     { key: "analytics:read", module: "analytics", action: "read", description: "View analytics" },
-    { key: "analytics:export", module: "analytics", action: "export", description: "Export analytics" },
+    { key: "analytics:write", module: "analytics", action: "write", description: "Export analytics" },
+
+    // templates
+    { key: "templates:read", module: "templates", action: "read", description: "View templates" },
+    { key: "templates:write", module: "templates", action: "write", description: "Create/edit templates" },
+
+    // products
+    { key: "products:read", module: "products", action: "read", description: "View products" },
+    { key: "products:write", module: "products", action: "write", description: "Create/edit products" },
+ 
 
     // users / roles
     { key: "users:read", module: "users", action: "read", description: "View users" },
-    { key: "users:manage", module: "users", action: "manage", description: "Invite/disable users" },
+    { key: "users:write", module: "users", action: "write", description: "Invite/disable users" },
+
     { key: "roles:read", module: "roles", action: "read", description: "View roles" },
-    { key: "roles:manage", module: "roles", action: "manage", description: "Manage roles + grants" },
+    { key: "roles:write", module: "roles", action: "write", description: "Manage roles + grants" },
 
     // settings / billing
     { key: "settings:read", module: "settings", action: "read", description: "View settings" },
     { key: "settings:write", module: "settings", action: "write", description: "Change settings" },
+
     { key: "billing:read", module: "billing", action: "read", description: "View billing" },
     { key: "billing:write", module: "billing", action: "write", description: "Manage billing" },
 
     // ops/logs
     { key: "logs:read", module: "logs", action: "read", description: "View delivery/system logs" },
-    { key: "logs:manage", module: "logs", action: "manage", description: "Pause/stop runs, ops actions" },
+    { key: "logs:write", module: "logs", action: "write", description: "Pause/stop runs, ops actions" },
 
     // integrations
     { key: "integrations:read", module: "integrations", action: "read", description: "View integrations" },
-    { key: "integrations:manage", module: "integrations", action: "manage", description: "Manage API keys/webhooks" },
+    { key: "integrations:write", module: "integrations", action: "write", description: "Manage API keys/webhooks" },
   ];
 
   for (const p of permissions) {
@@ -103,8 +114,8 @@ exports.seed = async function seed(knex) {
 
   await grant("analyst", ["analytics:read", "analytics:export", "campaigns:read", "segments:read"]);
   await grant("viewer", ["analytics:read", "campaigns:read", "segments:read"]);
-  await grant("support", ["campaigns:read", "logs:read", "logs:manage", "segments:read"]);
-  await grant("developer", ["integrations:read", "integrations:manage", "logs:read"]);
+  await grant("support", ["campaigns:read", "logs:read", "logs:write", "segments:read"]);
+  await grant("developer", ["integrations:read", "integrations:write", "logs:read"]);
 
   // 5) create default admin user (dev)
   const email = "gautam.kumar@equentis.com";

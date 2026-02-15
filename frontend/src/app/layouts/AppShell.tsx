@@ -7,8 +7,7 @@ import { useAuth } from "@/features/auth";
 export default function AppShell() {
   const { state, logout } = useAuth();
 
-  const name =
-    state.status === "authed"
+  const name = state.status === "authed"
       ? [state.user.firstName, state.user.lastName].filter(Boolean).join(" ") || state.user.email
       : undefined;
 

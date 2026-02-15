@@ -1,9 +1,11 @@
-import type { AppRoute } from "@/app/router/route.types";
+import type { AppRoute } from "@/app/router";
 import { ANALYTICS_ROUTES } from "@/features/analytics";
 import { CAMPAIGNS_ROUTES } from "@/features/campaigns";
 import { DASHBOARD_ROUTES } from "@/features/dashboard";
 import { SEGMENTS_ROUTES } from "@/features/segments";
 import { SETTINGS_ROUTES } from "@/features/settings";
+import { PRODUCTS_ROUTES } from "@/features/products";
+import { TEMPLATES_ROUTES } from "@/features/templates";
 
 const defineFeatureRoutes = (routes: AppRoute[]) => {
   const seenPath = new Set<string>();
@@ -24,4 +26,6 @@ export const FEATURE_ROUTES = defineFeatureRoutes([
   ...CAMPAIGNS_ROUTES,
   ...ANALYTICS_ROUTES,
   ...SETTINGS_ROUTES,
+  ...PRODUCTS_ROUTES,
+  ...TEMPLATES_ROUTES
 ]);

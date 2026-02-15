@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from "react"; ; 
 
 export type AppRoute = {
   path: string;
@@ -6,4 +6,5 @@ export type AppRoute = {
   navLabel?: string;
   anyOf?: string[];
   allOf?: string[];
+  children?:any
 };

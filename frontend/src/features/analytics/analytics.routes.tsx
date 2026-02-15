@@ -1,5 +1,5 @@
 import AnalyticsOverview from "@/features/analytics/pages/AnalyticsOverview";
-import type { AppRoute } from "@/app/router/route.types";
+import type { AppRoute } from "@/app/router";
 
 export const ANALYTICS_ROUTES: AppRoute[] = [
   {

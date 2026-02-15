@@ -1,5 +1,5 @@
-import type { PermissionRequirement } from "./auth.permissions.js";
-import { permissionMatches } from "./auth.permissions.js";
+import type { PermissionRequirement } from "./auth.permissions";
+import { permissionMatches } from "./auth.permissions";
 
 export const DASHBOARD_ROUTE_REQUIREMENT: PermissionRequirement = {
   anyOf: ["analytics:read", "campaigns:read", "segments:read", "users:read", "settings:read"],

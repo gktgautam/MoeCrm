@@ -1,5 +1,5 @@
 import SegmentsList from "@/features/segments/pages/SegmentsList";
-import type { AppRoute } from "@/app/router/route.types";
+import type { AppRoute } from "@/app/router";
 
 export const SEGMENTS_ROUTES: AppRoute[] = [
   {
