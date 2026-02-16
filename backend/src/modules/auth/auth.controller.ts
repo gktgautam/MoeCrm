@@ -3,13 +3,17 @@ import { Errors } from "@/core/http/app-error";
 import type { SignupBody, LoginBody } from "./auth.schemas";
 import { getPermissionsForUser, getRoleKeyForUser } from "./auth.permissions";
 import { resolveAllowedRoutes } from "./auth.route-access";
-import { createAppUser, verifyLogin } from "./auth.service";
+import { authService } from "./auth.service";
+ 
 
 export const authController = {
   signup: async (req: FastifyRequest<{ Body: SignupBody }>, reply: FastifyReply) => {
-    const user = await createAppUser({
+    
+    const orgId = Number(req.auth?.orgId);
+
+    const user = await authService.createAppUser({
       db: req.server.dbEngage,
-      orgId: req.body.orgId,
+      orgId,
       email: req.body.email,
       password: req.body.password,
       role: req.body.role,
@@ -32,10 +36,8 @@ export const authController = {
 
   login: async (req: FastifyRequest<{ Body: LoginBody }>, reply: FastifyReply) => {
     const { email, password } = req.body;
-    const orgId = 1;
-    const user = await verifyLogin({
+     const user = await authService.verifyLogin({
       db: req.server.dbEngage,
-      orgId,
       email,
       password,
     });
@@ -49,6 +51,7 @@ export const authController = {
       orgId: String(user.org_id),
       role: user.role,
     });
+
     req.server.setAuthCookie(reply, token);
 
     return reply.code(200).send({ ok: true, data: {} });

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { AppRole } from "./auth.types";
+import type { AppRole } from "./auth.types.js";
 
 export type PermissionRequirement = {
   anyOf?: string[];

@@ -1,85 +1,99 @@
 import { Errors } from "@/core/http/app-error";
 import argon2 from "argon2";
-import type { AppRole } from "./auth.types";
+import type { AppRole } from "./auth.types.js";
 
-async function resolveRoleId(db: any, orgId: number, role: AppRole | undefined) {
-  const roleKey = role ?? "admin";
-  const roleRes = await db.query(
-    `
-      select id
-      from app_roles
-      where org_id = $1 and key = $2
-      limit 1
-    `,
-    [orgId, roleKey],
-  );
-
-  const roleRow = roleRes.rows[0] as { id: number } | undefined;
-  if (!roleRow) {
-    throw Errors.badRequest("Invalid role");
-  }
-
-  return roleRow.id;
-}
-
-export async function createAppUser(args: {
-  db: any;
-  orgId: number;
-  email: string;
-  password: string;
-  role?: AppRole;
-}) {
-  const passwordHash = await argon2.hash(args.password, {
-    type: argon2.argon2id,
-    memoryCost: 19456,
-    timeCost: 2,
-    parallelism: 1,
-  });
-
-  const roleId = await resolveRoleId(args.db, args.orgId, args.role);
-
-  try {
-    const res = await args.db.query(
+export const authService = {
+  resolveRoleId: async (
+    db: any,
+    orgId: number,
+    role: AppRole | undefined
+  ) => {
+    const roleKey = role ?? "admin";
+    const roleRes = await db.query(
       `
-      insert into app_users (org_id, email, password_hash, role_id)
-      values ($1, $2, $3, $4)
-      returning id, org_id, email, role_id
-    `,
-      [args.orgId, args.email.toLowerCase(), passwordHash, roleId],
+        select id
+        from app_roles
+        where org_id = $1 and key = $2
+        limit 1
+      `,
+      [orgId, roleKey]
     );
 
-    return res.rows[0];
-  } catch (error) {
-    const err = error as { code?: string };
-    if (err.code === "23505") {
-      throw Errors.emailExists();
+    const roleRow = roleRes.rows[0] as { id: number } | undefined;
+    if (!roleRow) {
+      throw Errors.badRequest("Invalid role");
     }
-    throw error;
-  }
-}
 
-export async function verifyLogin(args: {
-  db: any;
-  orgId: number;
-  email: string;
-  password: string;
-}) {
-  const res = await args.db.query(
-    `
-      select u.id, u.org_id, u.email, r.key as role, u.password_hash
-      from app_users u
-      join app_roles r on r.id = u.role_id
-      where u.org_id = $1 and u.email = $2
-      limit 1
-    `,
-    [args.orgId, args.email.toLowerCase()],
-  );
+    return roleRow.id;
+  },
 
-  const user = res.rows[0];
-  if (!user) return null;
+  createAppUser: async (args: {
+    db: any;
+    orgId: number;
+    email: string;
+    password: string;
+    role?: AppRole;
+  }) => {
+    const passwordHash = await argon2.hash(args.password, {
+      type: argon2.argon2id,
+      memoryCost: 19456,
+      timeCost: 2,
+      parallelism: 1,
+    });
 
-  const ok = await argon2.verify(user.password_hash, args.password);
-  if (!ok) return null;
+    const roleId = await authService.resolveRoleId(
+      args.db,
+      args.orgId,
+      args.role
+    );
 
-  return { id: user.id, org_id: user.org_id, email: user.email, role: user.role };
-}
+    try {
+      const res = await args.db.query(
+        `
+        insert into app_users (org_id, email, password_hash, role_id)
+        values ($1, $2, $3, $4)
+        returning id, org_id, email, role_id
+      `,
+        [args.orgId, args.email.toLowerCase(), passwordHash, roleId]
+      );
+
+      return res.rows[0];
+    } catch (error) {
+      const err = error as { code?: string };
+      if (err.code === "23505") {
+        throw Errors.emailExists();
+      }
+      throw error;
+    }
+  },
+
+  verifyLogin: async (args: {
+    db: any; 
+    email: string;
+    password: string;
+  }) => {
+    const res = await args.db.query(
+      `
+        select u.id, u.org_id, u.email, r.key as role, u.password_hash
+        from app_users u
+        join app_roles r on r.id = u.role_id
+        where u.email = $1
+        limit 1
+      `,
+      [args.email.toLowerCase()]
+    );
+
+    const user = res.rows[0];
+    if (!user) return null;
+
+    const ok = await argon2.verify(user.password_hash, args.password);
+    if (!ok) return null;
+
+    return {
+      id: user.id,
+      org_id: user.org_id,
+      email: user.email,
+      role: user.role,
+    };
+  },
+};

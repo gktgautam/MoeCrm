@@ -1,4 +1,12 @@
-import type { ApiModule } from "@/modules/module-contract";
+ 
+import type { FastifyPluginAsync } from "fastify";
+
+export type ApiModule = {
+  name: string;
+  prefix: string;
+  routes: FastifyPluginAsync;
+};
+
 
 const ensureUnique = (modules: ApiModule[], field: "name" | "prefix") => {
   const seen = new Set<string>();

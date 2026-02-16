@@ -1,5 +1,5 @@
 import { Type, type Static } from "@sinclair/typebox";
-import { APP_ROLES } from "./auth.types";
+import { APP_ROLES } from "./auth.types.js";
 
 export const OrgId = Type.Integer({ minimum: 1 });
 export const Email = Type.String({ format: "email", maxLength: 255 });
@@ -9,14 +9,12 @@ export const Role = Type.Union(APP_ROLES.map((role) => Type.Literal(role)));
 export type TRole = Static<typeof Role>;
 
 export const AuthPayloadSchema = Type.Object({
-  userId: Type.String({ minLength: 1 }),
-  orgId: Type.String({ minLength: 1 }),
+  sub: Type.String({ minLength: 1 }), 
   role: Role,
 });
 export type TAuthPayload = Static<typeof AuthPayloadSchema>;
 
 export const signupBodySchema = Type.Object({
-  orgId: OrgId,
   email: Email,
   password: Password,
   role: Type.Optional(Role),
