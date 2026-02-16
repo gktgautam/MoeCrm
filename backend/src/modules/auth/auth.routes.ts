@@ -7,9 +7,19 @@ import { requireAuth } from "./auth.guard";
 
  
 const authRoutes: FastifyPluginAsync = async (app) => {
+
+ 
+   // Add default tags to all routes in this plugin
+  app.addHook("onRoute", (routeOptions) => {
+    routeOptions.schema = routeOptions.schema ?? {};
+    routeOptions.schema.tags = [
+      ...(routeOptions.schema.tags ?? []),
+      "auth",
+    ];
+  });
+
   app.post("/signup", {
     schema: {
-      tags: ["auth"],
       body: signupBodySchema,
       response: {
         200: EmptySuccessResponseSchema,
@@ -23,7 +33,6 @@ const authRoutes: FastifyPluginAsync = async (app) => {
 
   app.post("/login", {
     schema: {
-      tags: ["auth"],
       body: loginBodySchema,
       response: {
         200: EmptySuccessResponseSchema,
@@ -37,7 +46,6 @@ const authRoutes: FastifyPluginAsync = async (app) => {
 
   app.get("/me", {
     schema: {
-      tags: ["auth"],
       security: [{ cookieAuth: [] }],
       response: {
         200: meResponseSchema,
@@ -51,7 +59,6 @@ const authRoutes: FastifyPluginAsync = async (app) => {
 
   app.post("/logout", {
     schema: {
-      tags: ["auth"],
       response: { 200: EmptySuccessResponseSchema },
     },
     handler: authController.logout,

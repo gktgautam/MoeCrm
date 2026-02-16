@@ -13,4 +13,5 @@ export const API_V1_MODULES = defineModules([
   { name: "users", prefix: "/users", routes: usersRoutes },
   { name: "dashboard", prefix: "/dashboard", routes: dashboardRoutes },
   { name: "customers", prefix: "/customers", routes: customersRoutes },
+  
 ]);
