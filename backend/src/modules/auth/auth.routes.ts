@@ -1,20 +1,11 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
-import { signupBodySchema, loginBodySchema, meResponseSchema } from "./auth.schemas";
+import { signupBodySchema, loginBodySchema, meResponseSchema, EmptySuccessResponseSchema } from "./auth.schemas";
 import { authController } from "./auth.controller";
 import { requireAuth } from "./auth.guard";
 
-const EmptySuccessResponseSchema = Type.Object({
-  ok: Type.Literal(true),
-  data: Type.Object({}),
-});
-
-const LoginResponseSchema = Type.Object({
-  ok: Type.Literal(true),
-  data: Type.Object({}),
-});
-
+ 
 const authRoutes: FastifyPluginAsync = async (app) => {
   app.post("/signup", {
     schema: {
@@ -35,7 +26,7 @@ const authRoutes: FastifyPluginAsync = async (app) => {
       tags: ["auth"],
       body: loginBodySchema,
       response: {
-        200: LoginResponseSchema,
+        200: EmptySuccessResponseSchema,
         400: ErrorResponseSchema,
         401: ErrorResponseSchema,
         500: ErrorResponseSchema,

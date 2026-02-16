@@ -43,3 +43,11 @@ export const meResponseSchema = Type.Object({
   allowedRoutes: Type.Array(Type.String()),
 });
 export type MeResponse = Static<typeof meResponseSchema>;
+
+export const EmptySuccessResponseSchema = Type.Object({
+  ok: Type.Literal(true),
+  data: Type.Object({}),
+});
+
+export type EmptySuccess = Static<typeof EmptySuccessResponseSchema>;
+
