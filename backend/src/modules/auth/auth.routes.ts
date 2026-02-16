@@ -1,9 +1,9 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
-import { signupBodySchema, loginBodySchema, meResponseSchema } from "./auth.schemas.js";
-import { authController } from "./auth.controller.js";
-import { requireAuth } from "./auth.guard.js";
+import { signupBodySchema, loginBodySchema, meResponseSchema } from "./auth.schemas";
+import { authController } from "./auth.controller";
+import { requireAuth } from "./auth.guard";
 
 const EmptySuccessResponseSchema = Type.Object({
   ok: Type.Literal(true),

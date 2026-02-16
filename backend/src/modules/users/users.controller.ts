@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { Errors } from "@/core/http/app-error";
-import type { AppRole } from "../auth/auth.types.js";
+import type { AppRole } from "../auth/auth.types";
 
 export type AppUserListItem = {
   id: number;

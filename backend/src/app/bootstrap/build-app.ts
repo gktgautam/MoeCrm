@@ -6,10 +6,9 @@ import cookie from "@fastify/cookie";
 
 import swaggerPlugin from "@/core/plugins/swagger";
 import jwtAuthPlugin from "@/core/plugins/jwt.auth";
-import dbCrmPlugin from "@/core/plugins/db.crm.pg";
-import dbEngagePgPlugin from "@/core/plugins/db.engage.pg";
-import dbEngageKnexPlugin from "@/core/plugins/db.engage.knex";
-
+// import CrmDb from "@/core/db/register.crm.pg";
+import engageDb from "@/core/db/register.engage.pg";
+ 
 import routes from "@/app/http/register-routes";
 import { env } from "@/core/config/env";
 import { makeLoggerConfig } from "@/core/logging/logger";
@@ -53,10 +52,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(jwtAuthPlugin);
 
   // --- DB plugins (fail-fast if DB down) ---
-  // await app.register(dbCrmPlugin);
-  await app.register(dbEngagePgPlugin);
-  await app.register(dbEngageKnexPlugin);
-
+  // await app.register(CrmDb);
+  await app.register(engageDb);
+ 
   registerErrorHandling(app);
 
   // --- Routes ---

@@ -1,6 +1,6 @@
 import { Errors } from "@/core/http/app-error";
 import argon2 from "argon2";
-import type { AppRole } from "./auth.types.js";
+import type { AppRole } from "./auth.types";
 
 async function resolveRoleId(db: any, orgId: number, role: AppRole | undefined) {
   const roleKey = role ?? "admin";

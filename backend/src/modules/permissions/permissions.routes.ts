@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
-import { requireAuth, requirePermission } from "../auth/auth.guard.js";
+import { requireAuth, requirePermission } from "../auth/auth.guard";
 
 const PermissionSchema = Type.Object({
   id: Type.Integer(),

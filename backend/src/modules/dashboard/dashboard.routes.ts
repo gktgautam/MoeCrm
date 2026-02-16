@@ -1,10 +1,10 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
-import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard.js";
-import { fetchDashboardStats } from "./dashboard.service.js";
-import { resolveOrgIdFromRequest } from "../auth/org-access.js";
-import { DASHBOARD_ROUTE_REQUIREMENT } from "../auth/auth.route-access.js";
+import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard";
+import { fetchDashboardStats } from "./dashboard.service";
+import { resolveOrgIdFromRequest } from "../auth/org-access";
+import { DASHBOARD_ROUTE_REQUIREMENT } from "../auth/auth.route-access";
 
 const QuerySchema = Type.Object({ orgId: Type.Optional(Type.Integer({ minimum: 1 })) });
 

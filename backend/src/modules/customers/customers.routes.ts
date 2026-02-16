@@ -2,9 +2,9 @@ import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
 import { Errors } from "@/core/http/app-error";
-import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard.js";
-import { resolveOrgIdFromRequest } from "../auth/org-access.js";
-import { syncCustomersFromCrm } from "./customers.service.js";
+import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard";
+import { resolveOrgIdFromRequest } from "../auth/org-access";
+import { syncCustomersFromCrm } from "./customers.service";
 
 const BodySchema = Type.Object({
   orgId: Type.Optional(Type.Integer({ minimum: 1 })),

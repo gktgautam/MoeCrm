@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { buildApp } from "./app/bootstrap/build-app.js";
+import { buildApp } from "./app/bootstrap/build-app";
 import { env } from "@/core/config/env";
 
 async function start() {

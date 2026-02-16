@@ -1,7 +1,7 @@
 import fp from "fastify-plugin";
 import { Pool } from "pg";
 import { env } from "@/core/config/env";
-import { createPostgresPool, registerPostgresPoolLifecycle } from "./postgres-pool.js";
+import { createPostgresPool, registerPostgresPoolLifecycle } from "./pg-pool";
 
 declare module "fastify" {
   interface FastifyInstance {

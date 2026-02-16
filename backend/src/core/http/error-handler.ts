@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import { AppError, type ErrorCode } from "./app-error.js";
-import { buildErrorResponse } from "./error-response.js";
+import { AppError, type ErrorCode } from "./app-error";
+import { buildErrorResponse } from "./error-response";
 
 type HttpError = {
   statusCode: number;

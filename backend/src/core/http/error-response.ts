@@ -1,5 +1,5 @@
 import { Type, type Static } from "@sinclair/typebox";
-import type { ErrorCode } from "./app-error.js";
+import type { ErrorCode } from "./app-error";
 
 export const ErrorCodeSchema = Type.Union([
   Type.Literal("BAD_REQUEST"),

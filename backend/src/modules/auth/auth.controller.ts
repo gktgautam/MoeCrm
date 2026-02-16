@@ -1,9 +1,9 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { Errors } from "@/core/http/app-error";
-import type { SignupBody, LoginBody } from "./auth.schemas.js";
-import { getPermissionsForUser, getRoleKeyForUser } from "./auth.permissions.js";
-import { resolveAllowedRoutes } from "./auth.route-access.js";
-import { createAppUser, verifyLogin } from "./auth.service.js";
+import type { SignupBody, LoginBody } from "./auth.schemas";
+import { getPermissionsForUser, getRoleKeyForUser } from "./auth.permissions";
+import { resolveAllowedRoutes } from "./auth.route-access";
+import { createAppUser, verifyLogin } from "./auth.service";
 
 export const authController = {
   signup: async (req: FastifyRequest<{ Body: SignupBody }>, reply: FastifyReply) => {
@@ -21,7 +21,7 @@ export const authController = {
     }
 
     const token = req.server.signAuthToken({
-      sub: String(user.id),
+      userId: String(user.id),
       orgId: String(user.org_id),
       role: roleKey,
     });
@@ -45,7 +45,7 @@ export const authController = {
     }
 
     const token = req.server.signAuthToken({
-      sub: String(user.id),
+      userId: String(user.id),
       orgId: String(user.org_id),
       role: user.role,
     });
@@ -54,11 +54,10 @@ export const authController = {
     return reply.code(200).send({ ok: true, data: {} });
   },
 
-  me: async (req: FastifyRequest) => {
-    if (!req.auth) throw Errors.unauthorized();
+  me: async (req: FastifyRequest) => { 
 
-    const userId = Number(req.auth.sub);
-    const orgId = Number(req.auth.orgId);
+    const userId = Number(req.auth?.userId);
+    const orgId = Number(req.auth?.orgId);
 
     const { rows } = await req.server.dbEngage.query(
       `

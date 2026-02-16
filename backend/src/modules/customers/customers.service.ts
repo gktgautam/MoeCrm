@@ -1,5 +1,5 @@
 import type { Pool } from "pg";
-import { fetchCustomersUpdatedAfter, upsertContactsFromCrm } from "./customers.repo.js";
+import { fetchCustomersUpdatedAfter, upsertContactsFromCrm } from "./customers.repo";
 
 export type SyncCustomersParams = {
   dbCrm: Pool;

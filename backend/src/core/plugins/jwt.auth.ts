@@ -5,7 +5,7 @@ import { env } from "@/core/config/env";
 import type { AppRole } from "@/modules/auth";
 
 export type AuthTokenPayload = {
-  sub: string;
+  userId: string;
   orgId: string;
   role: AppRole;
 };

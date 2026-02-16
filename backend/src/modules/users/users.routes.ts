@@ -1,9 +1,9 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
-import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard.js";
-import { createUserInOrg, listUsersByOrg, updateUserInOrg } from "./users.controller.js";
-import { resolveOrgIdFromRequest } from "../auth/org-access.js";
+import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard";
+import { createUserInOrg, listUsersByOrg, updateUserInOrg } from "./users.controller";
+import { resolveOrgIdFromRequest } from "../auth/org-access";
 
 const QuerySchema = Type.Object({
   orgId: Type.Optional(Type.Integer({ minimum: 1 })),
@@ -108,7 +108,7 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
         app,
         orgId: Number(req.auth!.orgId),
         targetUserId: req.params.id,
-        actorUserId: Number(req.auth!.sub),
+        actorUserId: Number(req.auth!.userId),
         role_id: req.body.role_id,
         status: req.body.status,
       });

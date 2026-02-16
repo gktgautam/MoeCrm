@@ -1,6 +1,6 @@
 import type { FastifyRequest } from "fastify";
 import { Errors } from "@/core/http/app-error";
-import type { AppRole } from "./auth.types.js";
+import type { AppRole } from "./auth.types";
 
 const CROSS_ORG_DEFAULT: readonly AppRole[] = ["admin"];
 

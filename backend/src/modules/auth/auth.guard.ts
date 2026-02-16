@@ -1,15 +1,15 @@
 import type { preHandlerHookHandler } from "fastify";
 import { Errors } from "@/core/http/app-error";
 import type { AuthTokenPayload } from "@/core/plugins/jwt.auth";
-import type { AppRole } from "./auth.types.js";
-import { getPermissionsForUser, permissionMatches, type PermissionRequirement } from "./auth.permissions.js";
-import { resolveOrgIdFromRequest } from "./org-access.js";
+import type { AppRole } from "./auth.types";
+import { getPermissionsForUser, permissionMatches, type PermissionRequirement } from "./auth.permissions";
+import { resolveOrgIdFromRequest } from "./org-access";
 
 async function getRequestPermissions(req: any): Promise<string[]> {
   if (!req.auth) return [];
   if (Array.isArray(req.authPermissions)) return req.authPermissions;
 
-  const userId = Number(req.auth.sub);
+  const userId = Number(req.auth.userId);
   const orgId = Number(req.auth.orgId);
 
   req.authPermissions = await getPermissionsForUser(req.server, userId, orgId);
