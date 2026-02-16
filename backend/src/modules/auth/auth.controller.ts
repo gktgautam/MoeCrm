@@ -1,12 +1,13 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { BaseController } from "@/core/http/BaseController";
 import { Errors } from "@/core/http/app-error";
 import type { SignupBody, LoginBody } from "./auth.schemas";
 import { getPermissionsForUser, getRoleKeyForUser } from "./auth.permissions";
 import { resolveAllowedRoutes } from "./auth.route-access";
 import { createAppUser, verifyLogin } from "./auth.service";
 
-export const authController = {
-  signup: async (req: FastifyRequest<{ Body: SignupBody }>, reply: FastifyReply) => {
+class AuthController extends BaseController {
+  signup = async (req: FastifyRequest<{ Body: SignupBody }>, reply: FastifyReply) => {
     const user = await createAppUser({
       db: req.server.dbEngage,
       orgId: req.body.orgId,
@@ -27,10 +28,10 @@ export const authController = {
     });
 
     req.server.setAuthCookie(reply, token);
-    return { ok: true, data: {} };
-  },
+    return this.sendOk(reply, { data: {} });
+  };
 
-  login: async (req: FastifyRequest<{ Body: LoginBody }>, reply: FastifyReply) => {
+  login = async (req: FastifyRequest<{ Body: LoginBody }>, reply: FastifyReply) => {
     const { email, password } = req.body;
     const orgId = 1;
     const user = await verifyLogin({
@@ -51,11 +52,10 @@ export const authController = {
     });
     req.server.setAuthCookie(reply, token);
 
-    return reply.code(200).send({ ok: true, data: {} });
-  },
+    return this.sendOk(reply, { data: {} });
+  };
 
-  me: async (req: FastifyRequest) => { 
-
+  me = async (req: FastifyRequest) => {
     const userId = Number(req.auth?.userId);
     const orgId = Number(req.auth?.orgId);
 
@@ -92,10 +92,12 @@ export const authController = {
       permissions,
       allowedRoutes,
     };
-  },
+  };
 
-  logout: async (_req: FastifyRequest, reply: FastifyReply) => {
-    _req.server.clearAuthCookie(reply);
-    return { ok: true, data: {} };
-  },
-};
+  logout = async (req: FastifyRequest, reply: FastifyReply) => {
+    req.server.clearAuthCookie(reply);
+    return this.sendOk(reply, { data: {} });
+  };
+}
+
+export const authController = new AuthController();

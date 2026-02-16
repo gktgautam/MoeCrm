@@ -1,87 +1,94 @@
 // apps/backend/src/modules/engage/products/products.controller.ts
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import { BaseController } from "@/core/http/BaseController";
 import { productsService } from "./products.service";
 
 function ctx(req: FastifyRequest) {
-  return {  dbEngage: req.server.dbEngage, orgId: req.auth!.orgId, userId: req.auth!.userId };
+  return { dbEngage: req.server.dbEngage, orgId: req.auth!.orgId, userId: req.auth!.userId };
+}
+
+class ProductsController extends BaseController {
+  constructor(private readonly app: FastifyInstance) {
+    super();
+  }
+
+  private get svc() {
+    return productsService(this.app);
+  }
+
+  list = async (req: FastifyRequest) => {
+    const items = await this.svc.list(ctx(req));
+    return { ok: true, items };
+  };
+
+  get = async (req: FastifyRequest, reply: import("fastify").FastifyReply) => {
+    const id = Number((req.params as any).id);
+    const product = await this.svc.get(ctx(req), id);
+    if (!product) return this.sendError(reply, 404, "PRODUCT_NOT_FOUND");
+    return this.sendOk(reply, { product });
+  };
+
+  create = async (req: FastifyRequest, reply: import("fastify").FastifyReply) => {
+    const product = await this.svc.create(ctx(req), req.body as any);
+    return this.sendOk(reply, { product });
+  };
+
+  patch = async (req: FastifyRequest, reply: import("fastify").FastifyReply) => {
+    const id = Number((req.params as any).id);
+    const product = await this.svc.patch(ctx(req), id, req.body as any);
+    if (!product) return this.sendError(reply, 404, "PRODUCT_NOT_FOUND");
+    return this.sendOk(reply, { product });
+  };
+
+  getEmailSettings = async (req: FastifyRequest, reply: import("fastify").FastifyReply) => {
+    const productId = Number((req.params as any).id);
+    const settings = await this.svc.getEmailSettings(ctx(req), productId);
+    if (!settings) return this.sendError(reply, 404, "EMAIL_SETTINGS_NOT_FOUND");
+    return this.sendOk(reply, { settings });
+  };
+
+  putEmailSettings = async (req: FastifyRequest, reply: import("fastify").FastifyReply) => {
+    const productId = Number((req.params as any).id);
+    const settings = await this.svc.putEmailSettings(ctx(req), productId, req.body as any);
+    if (!settings) return this.sendError(reply, 404, "EMAIL_SETTINGS_NOT_FOUND");
+    return this.sendOk(reply, { settings });
+  };
+
+  getBranding = async (req: FastifyRequest, reply: import("fastify").FastifyReply) => {
+    const productId = Number((req.params as any).id);
+    const branding = await this.svc.getBranding(ctx(req), productId);
+
+    if (!branding) {
+      return this.sendOk(reply, {
+        branding: {
+          productId,
+          displayName: null,
+          websiteUrl: null,
+          trackingDomain: null,
+          senderDomain: null,
+          logoUrl: null,
+          faviconUrl: null,
+          brandColor: null,
+          supportEmail: null,
+          addressText: null,
+          privacyPolicyUrl: null,
+          termsUrl: null,
+          unsubscribeUrl: null,
+          isActive: true,
+        },
+      });
+    }
+
+    return this.sendOk(reply, { branding });
+  };
+
+  putBranding = async (req: FastifyRequest, reply: import("fastify").FastifyReply) => {
+    const productId = Number((req.params as any).id);
+    const branding = await this.svc.putBranding(ctx(req), productId, req.body as any);
+    return this.sendOk(reply, { branding });
+  };
 }
 
 export function productsController(app: FastifyInstance) {
-  const svc = productsService(app);
-
-  return {
-    list: async (req: FastifyRequest, reply: FastifyReply) => {
-      const items = await svc.list(ctx(req));
-      return reply.send({ ok: true, items });
-    },
-
-    get: async (req: FastifyRequest, reply: FastifyReply) => {
-      const id = Number((req.params as any).id);
-      const product = await svc.get(ctx(req), id);
-      if (!product) return reply.code(404).send({ ok: false, error: "PRODUCT_NOT_FOUND" });
-      return reply.send({ ok: true, product });
-    },
-
-    create: async (req: FastifyRequest, reply: FastifyReply) => {
-      const product = await svc.create(ctx(req), req.body as any);
-      return reply.send({ ok: true, product });
-    },
-
-    patch: async (req: FastifyRequest, reply: FastifyReply) => {
-      const id = Number((req.params as any).id);
-      const product = await svc.patch(ctx(req), id, req.body as any);
-      if (!product) return reply.code(404).send({ ok: false, error: "PRODUCT_NOT_FOUND" });
-      return reply.send({ ok: true, product });
-    },
-
-    getEmailSettings: async (req: FastifyRequest, reply: FastifyReply) => {
-      const productId = Number((req.params as any).id);
-      const settings = await svc.getEmailSettings(ctx(req), productId);
-      if (!settings) return reply.code(404).send({ ok: false, error: "EMAIL_SETTINGS_NOT_FOUND" });
-      return reply.send({ ok: true, settings });
-    },
-
-    putEmailSettings: async (req: FastifyRequest, reply: FastifyReply) => {
-      const productId = Number((req.params as any).id);
-      const settings = await svc.putEmailSettings(ctx(req), productId, req.body as any);
-      if (!settings) return reply.code(404).send({ ok: false, error: "EMAIL_SETTINGS_NOT_FOUND" });
-      return reply.send({ ok: true, settings });
-    },
-
-    getBranding: async (req: FastifyRequest, reply: FastifyReply) => {
-      const productId = Number((req.params as any).id);
-      const branding = await svc.getBranding(ctx(req), productId);
-
-      // UI-friendly: if no row, return defaults (optional)
-      if (!branding) {
-        return reply.send({
-          ok: true,
-          branding: {
-            productId,
-            displayName: null,
-            websiteUrl: null,
-            trackingDomain: null,
-            senderDomain: null,
-            logoUrl: null,
-            faviconUrl: null,
-            brandColor: null,
-            supportEmail: null,
-            addressText: null,
-            privacyPolicyUrl: null,
-            termsUrl: null,
-            unsubscribeUrl: null,
-            isActive: true,
-          },
-        });
-      }
-
-      return reply.send({ ok: true, branding });
-    },
-
-    putBranding: async (req: FastifyRequest, reply: FastifyReply) => {
-      const productId = Number((req.params as any).id);
-      const branding = await svc.putBranding(ctx(req), productId, req.body as any);
-      return reply.send({ ok: true, branding });
-    },
-  };
+  return new ProductsController(app);
 }
