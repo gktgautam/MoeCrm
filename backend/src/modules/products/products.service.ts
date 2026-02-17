@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import type { Pool } from "pg";
 
 import type {
   ProductBrandingPutBodyType,
@@ -6,29 +7,32 @@ import type {
   ProductEmailSettingsPutBodyType,
   ProductPatchBodyType,
 } from "./products.schemas";
-import { Pool } from "pg";
+ 
 
-type AuthCtx = { userId: string };
+import { bindDb } from "@/core/db/useDb"; // adjust path
 
+ 
 
+ 
 
 export function productsService(app: FastifyInstance) {
- const db = app.dbEngage as unknown as Pool;
+ 
+  const pool = app.dbEngage as Pool;
+  const db = bindDb(pool);
 
   return {
     async list() {
-      const res = await db.query(
+      return db.many(
         `SELECT id, name, description,
                 is_active AS "isActive",
                 created_at AS "createdAt", updated_at AS "updatedAt"
          FROM products
          ORDER BY id DESC`
-      );
-      return res.rows;
+      ); 
     },
 
     async get(id: number) {
-      return db.oneOrNone(
+       return db.oneOrNone(
         `SELECT id, name, description,
                 is_active AS "isActive",
                 created_at AS "createdAt", updated_at AS "updatedAt"
@@ -40,8 +44,10 @@ export function productsService(app: FastifyInstance) {
 
     // NOTE: create uses ctx like other methods (patch / branding / settings)
     async create(userId:number, input: ProductCreateBodyType) {
-      return db.tx(async (tx: any) => {
-        const product = await tx.one(
+      return db.withTx(async (tx) => {
+        const t = db.tx(tx);
+
+        const product = await t.one(
           `INSERT INTO products (name, description, is_active, created_by, updated_by)
            VALUES ($1,$2,$3,$4,$4)
            RETURNING id, name, description,
@@ -51,7 +57,7 @@ export function productsService(app: FastifyInstance) {
         );
 
         // Email settings row (channel='email') always ensured
-        await tx.none(
+       await t.none(
           `INSERT INTO product_channel_settings
            (product_id, channel, default_email_sender_id, email_header_html, email_footer_html, is_enabled)
            VALUES ($1,'email',$2,$3,$4,true)
@@ -66,7 +72,7 @@ export function productsService(app: FastifyInstance) {
 
         // Branding row ensured (optional values)
         const b = input.branding ?? {};
-        await tx.none(
+        await t.none(
           `INSERT INTO product_branding
            (product_id, display_name, website_url, tracking_domain, sender_domain,
             logo_url, favicon_url, brand_color, support_email, address_text,

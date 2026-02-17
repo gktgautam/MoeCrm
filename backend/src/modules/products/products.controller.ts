@@ -26,40 +26,44 @@ export function productsController(app: FastifyInstance) {
 
     get: async (req: FastifyRequest, reply: FastifyReply) => {
       const id = Number((req.params as any).id);
-      const product = await svc.get(ctx(req), id);
+      const product = await svc.get(id);
       if (!product) return reply.code(404).send({ ok: false, error: "PRODUCT_NOT_FOUND" });
       return reply.send({ ok: true, product });
     },
 
     create: async (req: FastifyRequest, reply: FastifyReply) => {
-      const product = await svc.create(ctx(req), req.body as any);
+      const userId = Number(req.auth?.userId);
+
+      const product = await svc.create(userId, req.body as any);
       return reply.send({ ok: true, product });
     },
 
     patch: async (req: FastifyRequest, reply: FastifyReply) => {
       const id = Number((req.params as any).id);
-      const product = await svc.patch(ctx(req), id, req.body as any);
+      const userId = Number(req.auth?.userId);
+
+      const product = await svc.patch(userId, id, req.body as any);
       if (!product) return reply.code(404).send({ ok: false, error: "PRODUCT_NOT_FOUND" });
       return reply.send({ ok: true, product });
     },
 
     getEmailSettings: async (req: FastifyRequest, reply: FastifyReply) => {
       const productId = Number((req.params as any).id);
-      const settings = await svc.getEmailSettings(ctx(req), productId);
+      const settings = await svc.getEmailSettings(productId);
       if (!settings) return reply.code(404).send({ ok: false, error: "EMAIL_SETTINGS_NOT_FOUND" });
       return reply.send({ ok: true, settings });
     },
 
     putEmailSettings: async (req: FastifyRequest, reply: FastifyReply) => {
       const productId = Number((req.params as any).id);
-      const settings = await svc.putEmailSettings(ctx(req), productId, req.body as any);
+      const settings = await svc.putEmailSettings(productId, req.body as any);
       if (!settings) return reply.code(404).send({ ok: false, error: "EMAIL_SETTINGS_NOT_FOUND" });
       return reply.send({ ok: true, settings });
     },
 
     getBranding: async (req: FastifyRequest, reply: FastifyReply) => {
       const productId = Number((req.params as any).id);
-      const branding = await svc.getBranding(ctx(req), productId);
+      const branding = await svc.getBranding(productId);
 
       // UI-friendly: if no row, return defaults (optional)
       if (!branding) {
@@ -89,7 +93,7 @@ export function productsController(app: FastifyInstance) {
 
     putBranding: async (req: FastifyRequest, reply: FastifyReply) => {
       const productId = Number((req.params as any).id);
-      const branding = await svc.putBranding(ctx(req), productId, req.body as any);
+      const branding = await svc.putBranding(productId, req.body as any);
       return reply.send({ ok: true, branding });
     },
   };
