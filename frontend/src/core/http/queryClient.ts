@@ -1,6 +1,6 @@
 // src/lib/queryClient.ts
 import { QueryClient, QueryCache, MutationCache } from "@tanstack/react-query";
-import { toast } from "@/core/ui/toast";
+import { toast } from "@/lib/toast";
 import { getApiErrorMessage } from "@/core/http/api-error";
 
 export const queryClient = new QueryClient({

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { appConfig } from "@/app/config/env";
 import { queryClient } from "@/core/http/queryClient";
-import { toast } from "@/core/ui/toast";
+import { toast } from "@/lib/toast";
 
 export const api = axios.create({
   baseURL: appConfig.apiUrl, // e.g. http://localhost:8080/api/v1

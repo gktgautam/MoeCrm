@@ -1,4 +1,6 @@
 /* src/styles/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+
 @import "tailwindcss";
 @import "../theme/tokens.css";
 
@@ -33,4 +35,7 @@ html, body, #root { height: 100%; }
 body {
   background: var(--c-bg);
   color: var(--c-text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
+
+ 

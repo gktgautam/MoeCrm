@@ -57,12 +57,7 @@ export const muiTheme = extendTheme({
   },
 
   shape: { borderRadius: 8 },
-
-  typography: {
-    fontFamily:
-      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    button: { textTransform: "none", fontWeight: 600 },
-  },
+ 
 
   components: {
     MuiCssBaseline: {

@@ -3,7 +3,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import type { AlertColor } from "@mui/material/Alert";
 
-import { subscribeToast, type ToastPayload } from "@/core/ui/toast";
+import { subscribeToast, type ToastPayload } from "@/lib/toast";
 
 type QueueItem = Required<ToastPayload> & { key: number };
 

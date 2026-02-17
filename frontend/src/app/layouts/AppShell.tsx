@@ -14,11 +14,11 @@ export default function AppShell() {
   const allowedRoutes = state.status === "authed" ? state.allowedRoutes : [];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-bg text-text">
       <Sidebar allowedRoutes={allowedRoutes} />
       <div className="flex-1 flex flex-col">
         <Topbar name={name} onLogout={state.status === "authed" ? () => void logout() : undefined} />
-        <main className="p-4 flex-1 overflow-auto bg-gray-50">
+        <main className="p-4 flex-1 overflow-auto">
           <Outlet />
         </main>
       </div>

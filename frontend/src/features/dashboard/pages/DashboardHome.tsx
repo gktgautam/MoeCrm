@@ -3,10 +3,9 @@ import { Button, Card, CardContent, TextField } from "@mui/material";
 
 export default function Demo() {
   return (
-    <div className="min-h-screen bg-bg text-text">
-      <header className="sticky top-0 border-b border-border bg-surface/80 backdrop-blur p-4 flex items-center justify-between">
-        <div className="font-semibold">EqueEngage</div>
-       </header>
+    <div className="min-h-screen">
+    
+        
 
       <main className="p-6">
         <div className="max-w-xl rounded-[--radius-lg] bg-surface border border-border shadow-[--shadow-md] p-6">
