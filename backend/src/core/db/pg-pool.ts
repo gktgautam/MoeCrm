@@ -53,7 +53,7 @@ export function registerPostgresPoolLifecycle(
 
 
 
-export async function connectWithRetry(
+ async function connectWithRetry(
   app: FastifyInstance,
   fn: () => Promise<void>,
   opts: RetryOptions

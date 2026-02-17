@@ -19,7 +19,7 @@ export function makeLoggerConfig(isProd: boolean): FastifyServerOptions["logger"
   err: (error: unknown) => {
     const e: any = error;
 
-    // pg-pool AggregateError uses `errors` array
+    // pg pool AggregateError uses `errors` array
     const inner = Array.isArray(e?.errors) ? e.errors : undefined;
 
     return {
