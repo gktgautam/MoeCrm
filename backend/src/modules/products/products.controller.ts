@@ -1,18 +1,28 @@
 // apps/backend/src/modules/engage/products/products.controller.ts
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { productsService } from "./products.service";
+import { Errors } from "@/core/http/app-error";
 
 function ctx(req: FastifyRequest) {
-  return {  dbEngage: req.server.dbEngage, orgId: req.auth!.orgId, userId: req.auth!.userId };
+  return {  
+    dbEngage: req.server.dbEngage, 
+    orgId: req.auth!.orgId, 
+    userId: req.auth!.userId };
 }
 
 export function productsController(app: FastifyInstance) {
-  const svc = productsService(app);
+ const svc = productsService({ dbEngage: app.dbEngage });
 
   return {
-    list: async (req: FastifyRequest, reply: FastifyReply) => {
-      const items = await svc.list(ctx(req));
-      return reply.send({ ok: true, items });
+    list: async (req: FastifyRequest, reply: FastifyReply) => { 
+     const orgId = Number(req.auth?.orgId);
+
+      const items = await svc.list(orgId);
+      if (!items) {
+            throw Errors.notFound()
+      }
+
+      return { ok: true, items }; 
     },
 
     get: async (req: FastifyRequest, reply: FastifyReply) => {

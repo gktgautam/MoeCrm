@@ -55,20 +55,21 @@ export type ProductBrandingPutInput = Partial<{
   isActive: boolean;
 }>;
 
-export function productsService(app: FastifyInstance) {
-  const db = app.dbEngage;
+export function productsService(infra: { dbEngage: any }) {
+ 
 
   return {
-    async list(ctx: AuthCtx) {
-      return db.any(
+    async list(orgId:number) {  
+    const res = await infra.dbEngage.query(
         `SELECT id, org_id AS "orgId", name, description,
                 is_active AS "isActive",
                 created_at AS "createdAt", updated_at AS "updatedAt"
          FROM products
          WHERE org_id=$1
          ORDER BY id DESC`,
-        [ctx.orgId]
+        [orgId]
       );
+      return res.rows[0];
     },
 
     async get(ctx: AuthCtx, id: number) {

@@ -28,51 +28,51 @@ export const productsRoutes: FastifyPluginAsync = async (app) => {
 
   app.addHook("preHandler", requireAuth); 
 
-  app.get("/v1/products", {
+  app.get("/products", {
     preHandler: [ requirePermission({ anyOf: ["products:read"] })],
     schema: { response: { 200: ProductListResponse } },
     handler: ctrl.list,
   });
 
-  app.post("/v1/products", {
+  app.post("/products", {
     preHandler: [ requirePermission({ anyOf: ["products:write"] })],
     schema: { body: ProductCreateBody, response: { 200: ProductCreateResponse } },
     handler: ctrl.create,
   });
 
-  app.get("/v1/products/:id", {
+  app.get("/products/:id", {
     preHandler: [requirePermission({ anyOf: ["products:read"] })],
     schema: { response: { 200: ProductGetResponse } },
     handler: ctrl.get,
   });
 
-  app.patch("/v1/products/:id", {
+  app.patch("/products/:id", {
     preHandler: [ requirePermission({ anyOf: ["products:write"] })],
     schema: { body: ProductPatchBody },
     handler: ctrl.patch,
   });
 
   // Email settings
-  app.get("/v1/products/:id/email-settings", {
+  app.get("/products/:id/email-settings", {
     preHandler: [requirePermission({ anyOf: ["products:read"] })],
     schema: { response: { 200: ProductEmailSettingsGetResponse } },
     handler: ctrl.getEmailSettings,
   });
 
-  app.put("/v1/products/:id/email-settings", {
+  app.put("/products/:id/email-settings", {
     preHandler: [ requirePermission({ anyOf: ["products:write"] })],
     schema: { body: ProductEmailSettingsPutBody, response: { 200: ProductEmailSettingsGetResponse } },
     handler: ctrl.putEmailSettings,
   });
 
   // Branding
-  app.get("/v1/products/:id/branding", {
+  app.get("/products/:id/branding", {
     preHandler: [requirePermission({ anyOf: ["products:read"] })],
     schema: { response: { 200: ProductBrandingGetResponse } },
     handler: ctrl.getBranding,
   });
 
-  app.put("/v1/products/:id/branding", {
+  app.put("/products/:id/branding", {
     preHandler: [requirePermission({ anyOf: ["products:write"] })],
     schema: { body: ProductBrandingPutBody, response: { 200: ProductBrandingGetResponse } },
     handler: ctrl.putBranding,
