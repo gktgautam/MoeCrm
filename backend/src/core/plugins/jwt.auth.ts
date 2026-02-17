@@ -6,7 +6,6 @@ import type { AppRole } from "@/modules/auth";
 
 export type AuthTokenPayload = {
   userId: string;
-  orgId: string;
   role: AppRole;
 };
 
@@ -39,13 +38,8 @@ const AUTH_COOKIE_NAME = "ee_auth";
 export default fp(async (app) => {
   await app.register(jwt, { secret: env.JWT_SECRET });
 
-  app.decorate("signAuthToken", (payload: AuthTokenPayload) => {
-    return app.jwt.sign(payload, { expiresIn: "7d" });
-  });
-
-  app.decorate("verifyAuthToken", (token: string) => {
-    return app.jwt.verify<AuthTokenPayload>(token);
-  });
+  app.decorate("signAuthToken", (payload: AuthTokenPayload) => app.jwt.sign(payload, { expiresIn: "7d" }));
+  app.decorate("verifyAuthToken", (token: string) => app.jwt.verify<AuthTokenPayload>(token));
 
   app.decorate("setAuthCookie", (reply: FastifyReply, token: string) => {
     reply.setCookie(AUTH_COOKIE_NAME, token, {
@@ -75,21 +69,12 @@ export default fp(async (app) => {
   });
 
   app.addHook("preHandler", async (req) => {
-    req.log.info(
-      {
-        hasCookie: Boolean(req.cookies?.[AUTH_COOKIE_NAME]),
-        hasAuthHeader: typeof req.headers?.authorization === "string",
-      },
-      "auth preHandler start",
-    );
-
     const token = app.getAuthToken(req);
     if (!token) return;
 
     try {
       req.auth = app.verifyAuthToken(token);
-    } catch (err) {
-      req.log.warn({ err }, "auth token invalid");
+    } catch {
       req.auth = undefined;
     }
   });

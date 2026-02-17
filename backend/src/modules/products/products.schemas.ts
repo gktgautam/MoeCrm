@@ -3,7 +3,6 @@ import { Type } from "@sinclair/typebox";
 
 export const ProductRow = Type.Object({
   id: Type.Number(),
-  orgId: Type.Number(),
   name: Type.String(),
   description: Type.String(),
   isActive: Type.Boolean(),

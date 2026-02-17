@@ -1,17 +1,11 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
-import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard";
+import { requireAuth, requirePermission } from "../auth/auth.guard";
 import { createUserInOrg, listUsersByOrg, updateUserInOrg } from "./users.controller";
-import { resolveOrgIdFromRequest } from "../auth/org-access";
-
-const QuerySchema = Type.Object({
-  orgId: Type.Optional(Type.Integer({ minimum: 1 })),
-});
 
 const UserSchema = Type.Object({
   id: Type.Integer(),
-  org_id: Type.Integer(),
   email: Type.String(),
   role: Type.String(),
   status: Type.Union([Type.Literal("invited"), Type.Literal("active"), Type.Literal("disabled")]),
@@ -38,11 +32,10 @@ const ResponseSchema = Type.Object({
 });
 
 const usersRoutes: FastifyPluginAsync = async (app) => {
-  app.get<{ Querystring: { orgId?: number } }>("/", {
+  app.get("/", {
     schema: {
       tags: ["users"],
       security: [{ cookieAuth: [] }],
-      querystring: QuerySchema,
       response: {
         200: ResponseSchema,
         400: ErrorResponseSchema,
@@ -51,10 +44,9 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
         500: ErrorResponseSchema,
       },
     },
-    preHandler: [requireAuth, requirePermission({ anyOf: ["users:read"] }), requireOrgAccess({ source: "query" })],
+    preHandler: [requireAuth, requirePermission({ anyOf: ["users:read"] })],
     handler: async (req) => {
-      const orgId = resolveOrgIdFromRequest(req, { source: "query" });
-      const users = await listUsersByOrg(app, orgId);
+      const users = await listUsersByOrg(app);
       return { ok: true as const, data: { users } };
     },
   });
@@ -77,7 +69,6 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
     handler: async (req) => {
       const user = await createUserInOrg({
         app,
-        orgId: Number(req.auth!.orgId),
         email: req.body.email.trim().toLowerCase(),
         role_id: req.body.role_id,
         status: req.body.status,
@@ -106,7 +97,6 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
     handler: async (req) => {
       const user = await updateUserInOrg({
         app,
-        orgId: Number(req.auth!.orgId),
         targetUserId: req.params.id,
         actorUserId: Number(req.auth!.userId),
         role_id: req.body.role_id,

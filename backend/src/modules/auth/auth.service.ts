@@ -3,37 +3,24 @@ import argon2 from "argon2";
 import type { AppRole } from "./auth.types.js";
 
 export const authService = {
-  resolveRoleId: async (
-    db: any,
-    orgId: number,
-    role: AppRole | undefined
-  ) => {
+  resolveRoleId: async (db: any, role: AppRole | undefined) => {
     const roleKey = role ?? "admin";
     const roleRes = await db.query(
       `
         select id
         from app_roles
-        where org_id = $1 and key = $2
+        where key = $1
         limit 1
       `,
-      [orgId, roleKey]
+      [roleKey],
     );
 
     const roleRow = roleRes.rows[0] as { id: number } | undefined;
-    if (!roleRow) {
-      throw Errors.badRequest("Invalid role");
-    }
-
+    if (!roleRow) throw Errors.badRequest("Invalid role");
     return roleRow.id;
   },
 
-  createAppUser: async (args: {
-    db: any;
-    orgId: number;
-    email: string;
-    password: string;
-    role?: AppRole;
-  }) => {
+  createAppUser: async (args: { db: any; email: string; password: string; role?: AppRole }) => {
     const passwordHash = await argon2.hash(args.password, {
       type: argon2.argon2id,
       memoryCost: 19456,
@@ -41,46 +28,36 @@ export const authService = {
       parallelism: 1,
     });
 
-    const roleId = await authService.resolveRoleId(
-      args.db,
-      args.orgId,
-      args.role
-    );
+    const roleId = await authService.resolveRoleId(args.db, args.role);
 
     try {
       const res = await args.db.query(
         `
-        insert into app_users (org_id, email, password_hash, role_id)
-        values ($1, $2, $3, $4)
-        returning id, org_id, email, role_id
+        insert into app_users (email, password_hash, role_id)
+        values ($1, $2, $3)
+        returning id, email, role_id
       `,
-        [args.orgId, args.email.toLowerCase(), passwordHash, roleId]
+        [args.email.toLowerCase(), passwordHash, roleId],
       );
 
       return res.rows[0];
     } catch (error) {
       const err = error as { code?: string };
-      if (err.code === "23505") {
-        throw Errors.emailExists();
-      }
+      if (err.code === "23505") throw Errors.emailExists();
       throw error;
     }
   },
 
-  verifyLogin: async (args: {
-    db: any; 
-    email: string;
-    password: string;
-  }) => {
+  verifyLogin: async (args: { db: any; email: string; password: string }) => {
     const res = await args.db.query(
       `
-        select u.id, u.org_id, u.email, r.key as role, u.password_hash
+        select u.id, u.email, r.key as role, u.password_hash
         from app_users u
         join app_roles r on r.id = u.role_id
         where u.email = $1
         limit 1
       `,
-      [args.email.toLowerCase()]
+      [args.email.toLowerCase()],
     );
 
     const user = res.rows[0];
@@ -89,11 +66,6 @@ export const authService = {
     const ok = await argon2.verify(user.password_hash, args.password);
     if (!ok) return null;
 
-    return {
-      id: user.id,
-      org_id: user.org_id,
-      email: user.email,
-      role: user.role,
-    };
+    return { id: user.id, email: user.email, role: user.role };
   },
 };

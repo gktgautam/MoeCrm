@@ -6,7 +6,6 @@ import { Errors } from "@/core/http/app-error";
 function ctx(req: FastifyRequest) {
   return {  
     dbEngage: req.server.dbEngage, 
-    orgId: req.auth!.orgId, 
     userId: req.auth!.userId };
 }
 
@@ -15,9 +14,7 @@ export function productsController(app: FastifyInstance) {
 
   return {
     list: async (req: FastifyRequest, reply: FastifyReply) => { 
-     const orgId = Number(req.auth?.orgId);
-
-      const items = await svc.list(orgId);
+      const items = await svc.list();
       if (!items) {
             throw Errors.notFound()
       }

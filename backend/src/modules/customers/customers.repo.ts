@@ -2,7 +2,6 @@ import type { Pool } from "pg";
 
 export type CrmCustomerRow = {
   customer_id: number;
-  org_id: number;
   email: string | null;
   name: string | null;
   phone: string | null;
@@ -11,12 +10,11 @@ export type CrmCustomerRow = {
   updated_at: Date;
 };
 
-export async function fetchCustomersUpdatedAfter(dbCrm: Pool, orgId: number, updatedAfter?: string) {
+export async function fetchCustomersUpdatedAfter(dbCrm: Pool, updatedAfter?: string) {
   const hasUpdatedAfter = Boolean(updatedAfter);
   const query = `
     select
       id as customer_id,
-      org_id,
       email,
       name,
       phone,
@@ -24,13 +22,12 @@ export async function fetchCustomersUpdatedAfter(dbCrm: Pool, orgId: number, upd
       plan,
       updated_at
     from customers
-    where org_id = $1
-      ${hasUpdatedAfter ? "and updated_at > $2" : ""}
+    ${hasUpdatedAfter ? "where updated_at > $1" : ""}
     order by updated_at asc
     limit 5000
   `;
 
-  const values = hasUpdatedAfter ? [orgId, new Date(updatedAfter as string)] : [orgId];
+  const values = hasUpdatedAfter ? [new Date(updatedAfter as string)] : [];
   const { rows } = await dbCrm.query<CrmCustomerRow>(query, values);
   return rows;
 }
@@ -42,28 +39,17 @@ export async function upsertContactsFromCrm(dbEngage: Pool, rows: CrmCustomerRow
   const placeholders: string[] = [];
 
   rows.forEach((row, index) => {
-    const offset = index * 8;
-    placeholders.push(
-      `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8})`,
-    );
+    const offset = index * 7;
+    placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7})`);
 
-    values.push(
-      row.org_id,
-      row.customer_id,
-      row.email,
-      row.phone,
-      row.name,
-      row.city,
-      row.plan,
-      row.updated_at ?? new Date(),
-    );
+    values.push(row.customer_id, row.email, row.phone, row.name, row.city, row.plan, row.updated_at ?? new Date());
   });
 
   const sql = `
     insert into contacts
-      (org_id, crm_customer_id, email, phone, first_name, city, plan, last_synced_at)
+      (crm_customer_id, email, phone, first_name, city, plan, last_synced_at)
     values ${placeholders.join(",")}
-    on conflict (org_id, crm_customer_id)
+    on conflict (crm_customer_id)
     do update set
       email = excluded.email,
       phone = excluded.phone,

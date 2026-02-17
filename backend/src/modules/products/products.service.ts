@@ -1,7 +1,5 @@
 // apps/backend/src/modules/engage/products/products.service.ts
-import type { FastifyInstance } from "fastify";
-
-type AuthCtx = { orgId: string; userId: string };
+type AuthCtx = { userId: string };
 
 export type ProductCreateInput = {
   name: string;
@@ -56,52 +54,49 @@ export type ProductBrandingPutInput = Partial<{
 }>;
 
 export function productsService(infra: { dbEngage: any }) {
- 
+  const db = infra.dbEngage;
 
   return {
-    async list(orgId:number) {  
-    const res = await infra.dbEngage.query(
-        `SELECT id, org_id AS "orgId", name, description,
+    async list() {
+      const res = await infra.dbEngage.query(
+        `SELECT id, name, description,
                 is_active AS "isActive",
                 created_at AS "createdAt", updated_at AS "updatedAt"
          FROM products
-         WHERE org_id=$1
          ORDER BY id DESC`,
-        [orgId]
       );
-      return res.rows[0];
+      return res.rows;
     },
 
     async get(ctx: AuthCtx, id: number) {
       return db.oneOrNone(
-        `SELECT id, org_id AS "orgId", name, description,
+        `SELECT id, name, description,
                 is_active AS "isActive",
                 created_at AS "createdAt", updated_at AS "updatedAt"
          FROM products
-         WHERE org_id=$1 AND id=$2`,
-        [ctx.orgId, id]
+         WHERE id=$1`,
+        [id]
       );
     },
 
     async create(ctx: AuthCtx, input: ProductCreateInput) {
       return db.tx(async (tx: any) => {
         const product = await tx.one(
-          `INSERT INTO products (org_id, name, description, is_active, created_by, updated_by)
-           VALUES ($1,$2,$3,true,$4,$4)
-           RETURNING id, org_id AS "orgId", name, description,
+          `INSERT INTO products (name, description, is_active, created_by, updated_by)
+           VALUES ($1,$2,$3,$4,$4)
+           RETURNING id, name, description,
                      is_active AS "isActive",
                      created_at AS "createdAt", updated_at AS "updatedAt"`,
-          [ctx.orgId, input.name, input.description, ctx.userId]
+          [input.name, input.description, true, ctx.userId]
         );
 
         // Email settings row (channel='email') always ensured
         await tx.none(
           `INSERT INTO product_channel_settings
-           (org_id, product_id, channel, default_email_sender_id, email_header_html, email_footer_html, is_enabled)
-           VALUES ($1,$2,'email',$3,$4,$5,true)
+           (product_id, channel, default_email_sender_id, email_header_html, email_footer_html, is_enabled)
+           VALUES ($1,'email',$2,$3,$4,true)
            ON CONFLICT (product_id, channel) DO NOTHING`,
           [
-            ctx.orgId,
             product.id,
             input.defaultEmailSenderId ?? null,
             input.emailHeaderHtml ?? null,
@@ -113,13 +108,13 @@ export function productsService(infra: { dbEngage: any }) {
         const b = input.branding ?? {};
         await tx.none(
           `INSERT INTO product_branding
-           (product_id, org_id, display_name, website_url, tracking_domain, sender_domain,
+           (product_id, display_name, website_url, tracking_domain, sender_domain,
             logo_url, favicon_url, brand_color, support_email, address_text,
             privacy_policy_url, terms_url, unsubscribe_url, is_active, created_at, updated_at)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, COALESCE($15,true), now(), now())
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13, COALESCE($14,true), now(), now())
            ON CONFLICT (product_id) DO NOTHING`,
           [
-            product.id, ctx.orgId,
+            product.id,
             b.displayName ?? null,
             b.websiteUrl ?? null,
             b.trackingDomain ?? null,
@@ -143,16 +138,16 @@ export function productsService(infra: { dbEngage: any }) {
     async patch(ctx: AuthCtx, id: number, input: ProductPatchInput) {
       return db.oneOrNone(
         `UPDATE products
-         SET name=COALESCE($3,name),
-             description=COALESCE($4,description),
-             is_active=COALESCE($5,is_active),
-             updated_by=$6,
+         SET name=COALESCE($2,name),
+             description=COALESCE($3,description),
+             is_active=COALESCE($4,is_active),
+             updated_by=$5,
              updated_at=now()
-         WHERE org_id=$1 AND id=$2
-         RETURNING id, org_id AS "orgId", name, description,
+         WHERE id=$1
+         RETURNING id, name, description,
                    is_active AS "isActive",
                    created_at AS "createdAt", updated_at AS "updatedAt"`,
-        [ctx.orgId, id, input.name ?? null, input.description ?? null, input.isActive ?? null, ctx.userId]
+        [id, input.name ?? null, input.description ?? null, input.isActive ?? null, ctx.userId]
       );
     },
 
@@ -165,27 +160,27 @@ export function productsService(infra: { dbEngage: any }) {
                 email_header_html AS "emailHeaderHtml",
                 email_footer_html AS "emailFooterHtml"
          FROM product_channel_settings
-         WHERE org_id=$1 AND product_id=$2 AND channel='email'`,
-        [ctx.orgId, productId]
+         WHERE product_id=$1 AND channel='email'`,
+        [productId]
       );
     },
 
     async putEmailSettings(ctx: AuthCtx, productId: number, input: ProductEmailSettingsPutInput) {
       return db.oneOrNone(
         `UPDATE product_channel_settings
-         SET is_enabled=COALESCE($3,is_enabled),
-             default_email_sender_id=COALESCE($4,default_email_sender_id),
-             email_header_html=COALESCE($5,email_header_html),
-             email_footer_html=COALESCE($6,email_footer_html),
+         SET is_enabled=COALESCE($2,is_enabled),
+             default_email_sender_id=COALESCE($3,default_email_sender_id),
+             email_header_html=COALESCE($4,email_header_html),
+             email_footer_html=COALESCE($5,email_footer_html),
              updated_at=now()
-         WHERE org_id=$1 AND product_id=$2 AND channel='email'
+         WHERE product_id=$1 AND channel='email'
          RETURNING product_id AS "productId",
                 channel,
                 is_enabled AS "isEnabled",
                 default_email_sender_id AS "defaultEmailSenderId",
                 email_header_html AS "emailHeaderHtml",
                 email_footer_html AS "emailFooterHtml"`,
-        [ctx.orgId, productId, input.isEnabled ?? null, input.defaultEmailSenderId ?? null, input.emailHeaderHtml ?? null, input.emailFooterHtml ?? null]
+        [productId, input.isEnabled ?? null, input.defaultEmailSenderId ?? null, input.emailHeaderHtml ?? null, input.emailFooterHtml ?? null]
       );
     },
 
@@ -206,8 +201,8 @@ export function productsService(infra: { dbEngage: any }) {
                 unsubscribe_url AS "unsubscribeUrl",
                 is_active AS "isActive"
          FROM product_branding
-         WHERE org_id=$1 AND product_id=$2`,
-        [ctx.orgId, productId]
+         WHERE product_id=$1`,
+        [productId]
       );
     },
 
@@ -215,10 +210,10 @@ export function productsService(infra: { dbEngage: any }) {
       // upsert (insert if missing, else update)
       return db.one(
         `INSERT INTO product_branding
-         (product_id, org_id, display_name, website_url, tracking_domain, sender_domain,
+         (product_id, display_name, website_url, tracking_domain, sender_domain,
           logo_url, favicon_url, brand_color, support_email, address_text,
           privacy_policy_url, terms_url, unsubscribe_url, is_active, created_at, updated_at)
-         VALUES ($2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, COALESCE($15,true), now(), now())
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13, COALESCE($14,true), now(), now())
          ON CONFLICT (product_id)
          DO UPDATE SET
            display_name=COALESCE(EXCLUDED.display_name, product_branding.display_name),
@@ -250,7 +245,7 @@ export function productsService(infra: { dbEngage: any }) {
            unsubscribe_url AS "unsubscribeUrl",
            is_active AS "isActive"`,
         [
-          ctx.orgId, productId,
+          productId,
           input.displayName ?? null,
           input.websiteUrl ?? null,
           input.trackingDomain ?? null,

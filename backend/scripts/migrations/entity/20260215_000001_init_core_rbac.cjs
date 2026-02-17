@@ -3,20 +3,9 @@
 exports.up = async function up(knex) {
   await knex.schema.raw(`CREATE EXTENSION IF NOT EXISTS citext;`);
 
-  // ---- Orgs ----
-  await knex.schema.createTable("app_orgs", (t) => {
-    t.bigIncrements("id").primary();
-    t.text("name").notNullable();
-    t.text("slug").notNullable().unique(); // e.g. "equentis"
-    t.text("status").notNullable().defaultTo("active"); // active/disabled
-    t.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
-    t.timestamp("updated_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
-  });
-
-  // ---- Roles (org-scoped; unique per org) ----
+  // ---- Roles ----
   await knex.schema.createTable("app_roles", (t) => {
     t.increments("id").primary();
-    t.bigInteger("org_id").notNullable().references("id").inTable("app_orgs").onDelete("CASCADE");
     t.text("key").notNullable();   // admin/marketer/analyst/viewer/support/developer
     t.text("name").notNullable();  // display name
     t.text("description").nullable();
@@ -24,8 +13,7 @@ exports.up = async function up(knex) {
     t.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
     t.timestamp("updated_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
 
-    t.unique(["org_id", "key"]);
-    t.index(["org_id"]);
+    t.unique(["key"]);
   });
 
   // ---- Permissions (global catalog) ----
@@ -50,7 +38,6 @@ exports.up = async function up(knex) {
   // ---- Users (single role via role_id) ----
   await knex.schema.createTable("app_users", (t) => {
     t.bigIncrements("id").primary();
-    t.bigInteger("org_id").notNullable().references("id").inTable("app_orgs").onDelete("CASCADE");
 
     t.specificType("email", "citext").notNullable(); // case-insensitive
     t.text("first_name").nullable();
@@ -75,9 +62,7 @@ exports.up = async function up(knex) {
     t.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
     t.timestamp("updated_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
 
-    t.unique(["org_id", "email"]);
-    t.index(["org_id", "role_id"]);
-    t.index(["org_id"]);
+    t.unique(["email"]);
     t.index(["role_id"]);
   });
 };
@@ -87,5 +72,4 @@ exports.down = async function down(knex) {
   await knex.schema.dropTableIfExists("app_role_permissions");
   await knex.schema.dropTableIfExists("app_permissions");
   await knex.schema.dropTableIfExists("app_roles");
-  await knex.schema.dropTableIfExists("app_orgs");
 };

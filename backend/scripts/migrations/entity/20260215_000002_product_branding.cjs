@@ -7,7 +7,6 @@ exports.up = async function up(knex) {
       t.bigInteger("product_id").primary(); // 1:1
 
       // basics
-      t.bigInteger("org_id").notNullable().index();
       t.text("display_name").nullable(); // label name shown in UI/email footer etc.
 
       // URLs / domains
@@ -42,10 +41,9 @@ exports.up = async function up(knex) {
       t.unique(["product_id"], { indexName: "product_branding_product_unique" });
     });
 
-    // Optional: prevent duplicate tracking domains per org (if you want)
     await knex.schema.raw(`
-      CREATE UNIQUE INDEX IF NOT EXISTS product_branding_org_tracking_domain_unique
-      ON product_branding (org_id, tracking_domain)
+      CREATE UNIQUE INDEX IF NOT EXISTS product_branding_tracking_domain_unique
+      ON product_branding (tracking_domain)
       WHERE tracking_domain IS NOT NULL
     `);
   }

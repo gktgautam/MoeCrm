@@ -2,18 +2,7 @@
 const argon2 = require("argon2");
 
 exports.seed = async function seed(knex) {
-  // 1) create default org
-  const org = await knex("app_orgs")
-    .insert({ name: "Default Org", slug: "default", status: "active" })
-    .onConflict("slug")
-    .ignore()
-    .returning(["id"]);
-
-  const orgId =
-    (org && org[0] && (org[0].id ?? org[0])) ||
-    (await knex("app_orgs").where({ slug: "default" }).first("id")).id;
-
-  // 2) permission catalog
+  // 1) permission catalog
   const permissions = [
     // segments
     { key: "segments:read", module: "segments", action: "read", description: "View segments" },
@@ -76,12 +65,12 @@ exports.seed = async function seed(knex) {
 
   for (const r of roles) {
     await knex("app_roles")
-      .insert({ ...r, org_id: orgId })
-      .onConflict(["org_id", "key"])
+      .insert({ ...r })
+      .onConflict(["key"])
       .ignore();
   }
 
-  const roleRows = await knex("app_roles").where({ org_id: orgId }).select(["id", "key"]);
+  const roleRows = await knex("app_roles").select(["id", "key"]);
   const permRows = await knex("app_permissions").select(["id", "key"]);
 
   const roleIdByKey = Object.fromEntries(roleRows.map((r) => [r.key, r.id]));
@@ -119,12 +108,11 @@ exports.seed = async function seed(knex) {
 
   // 5) create default admin user (dev)
   const email = "gautam.kumar@equentis.com";
-  const existing = await knex("app_users").where({ org_id: orgId, email }).first("id");
+  const existing = await knex("app_users").where({ email }).first("id");
 
   if (!existing) {
     const passwordHash = await argon2.hash("Password@123");
     await knex("app_users").insert({
-      org_id: orgId,
       email,
       first_name: "Gautam",
       last_name: "Kumar",
@@ -141,10 +129,9 @@ exports.seed = async function seed(knex) {
 };
 
 exports.down = async function down(knex) {
-  // Keep org + roles + permissions in down? Usually safe to remove in reverse.
+
   await knex("app_users").del();
   await knex("app_role_permissions").del();
   await knex("app_roles").del();
   await knex("app_permissions").del();
-  await knex("app_orgs").where({ slug: "default" }).del();
 };

@@ -4,7 +4,6 @@ import { fetchCustomersUpdatedAfter, upsertContactsFromCrm } from "./customers.r
 export type SyncCustomersParams = {
   dbCrm: Pool;
   dbEngage: Pool;
-  orgId: number;
   updatedAfter?: string;
 };
 
@@ -14,7 +13,7 @@ export type SyncCustomersResult = {
 };
 
 export async function syncCustomersFromCrm(params: SyncCustomersParams): Promise<SyncCustomersResult> {
-  const rows = await fetchCustomersUpdatedAfter(params.dbCrm, params.orgId, params.updatedAfter);
+  const rows = await fetchCustomersUpdatedAfter(params.dbCrm, params.updatedAfter);
   const upserted = await upsertContactsFromCrm(params.dbEngage, rows);
 
   return {

@@ -19,8 +19,6 @@ exports.up = async function up(knex) {
   if (!hasProducts) {
     await knex.schema.createTable("products", (t) => {
       t.bigIncrements("id").primary();
-      t.bigInteger("org_id").notNullable().index();
-
       t.text("name").notNullable();
       t.text("description").notNullable();
 
@@ -32,7 +30,7 @@ exports.up = async function up(knex) {
       t.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
       t.timestamp("updated_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
 
-      t.unique(["org_id", "name"], { indexName: "products_org_name_unique" });
+      t.unique(["name"], { indexName: "products_name_unique" });
     });
   }
 
@@ -43,8 +41,6 @@ exports.up = async function up(knex) {
   if (!hasEmailSenders) {
     await knex.schema.createTable("email_senders", (t) => {
       t.bigIncrements("id").primary();
-      t.bigInteger("org_id").notNullable().index();
-
       t.text("name").notNullable();
       t.text("from_email").notNullable();
       t.text("reply_to_email").nullable();
@@ -55,7 +51,7 @@ exports.up = async function up(knex) {
       t.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
       t.timestamp("updated_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
 
-      t.unique(["org_id", "from_email"], { indexName: "email_senders_org_email_unique" });
+      t.unique(["from_email"], { indexName: "email_senders_email_unique" });
     });
   }
 
@@ -68,7 +64,6 @@ exports.up = async function up(knex) {
     await knex.schema.createTable("product_channel_settings", (t) => {
       t.bigIncrements("id").primary();
 
-      t.bigInteger("org_id").notNullable().index();
       t.bigInteger("product_id").notNullable().index();
 
       // Keep TEXT + CHECK instead of creating enum (easier migrations)
@@ -113,7 +108,6 @@ exports.up = async function up(knex) {
     await knex.schema.createTable("templates", (t) => {
       t.bigIncrements("id").primary();
 
-      t.bigInteger("org_id").notNullable().index();
       t.bigInteger("product_id").notNullable().index();
 
       t.text("name").notNullable();
@@ -129,8 +123,8 @@ exports.up = async function up(knex) {
       t.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
       t.timestamp("updated_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
 
-      t.unique(["org_id", "product_id", "name"], {
-        indexName: "templates_org_product_name_unique",
+      t.unique(["product_id", "name"], {
+        indexName: "templates_product_name_unique",
       });
 
       t
@@ -140,8 +134,8 @@ exports.up = async function up(knex) {
     });
 
     await knex.schema.raw(`
-      CREATE INDEX IF NOT EXISTS templates_org_status_idx
-      ON templates (org_id, status)
+      CREATE INDEX IF NOT EXISTS templates_status_idx
+      ON templates (status)
     `);
   }
 

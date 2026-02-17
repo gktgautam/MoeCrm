@@ -6,7 +6,6 @@ import { createRole, listRolesByOrg, replaceRolePermissions, updateRole } from "
 
 const RoleSchema = Type.Object({
   id: Type.Integer(),
-  org_id: Type.Integer(),
   key: Type.String(),
   name: Type.String(),
   description: Type.Union([Type.String(), Type.Null()]),
@@ -48,8 +47,7 @@ const rolesRoutes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [requireAuth, requirePermission({ anyOf: ["roles:read", "users:manage"] })],
     handler: async (req) => {
-      const orgId = Number(req.auth!.orgId);
-      const roles = await listRolesByOrg(app, orgId);
+      const roles = await listRolesByOrg(app);
       return { ok: true as const, data: { roles } };
     },
   });
@@ -72,7 +70,6 @@ const rolesRoutes: FastifyPluginAsync = async (app) => {
     handler: async (req) => {
       const role = await createRole({
         app,
-        orgId: Number(req.auth!.orgId),
         key: req.body.key.trim().toLowerCase(),
         name: req.body.name.trim(),
         description: req.body.description?.trim(),
@@ -103,8 +100,7 @@ const rolesRoutes: FastifyPluginAsync = async (app) => {
       handler: async (req) => {
         const role = await updateRole({
           app,
-          orgId: Number(req.auth!.orgId),
-          roleId: req.params.id,
+            roleId: req.params.id,
           key: req.body.key?.trim().toLowerCase(),
           name: req.body.name?.trim(),
           description: typeof req.body.description === "string" ? req.body.description.trim() : req.body.description,
@@ -134,7 +130,6 @@ const rolesRoutes: FastifyPluginAsync = async (app) => {
       const permissionIds = [...new Set(req.body.permissionIds)];
       const role = await replaceRolePermissions({
         app,
-        orgId: Number(req.auth!.orgId),
         roleId: req.params.id,
         permissionIds,
       });
