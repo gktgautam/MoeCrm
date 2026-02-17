@@ -1,9 +1,7 @@
-// apps/backend/src/modules/engage/products/products.schemas.ts
 import { Type } from "@sinclair/typebox";
 
 export const ProductRow = Type.Object({
   id: Type.Number(),
-  orgId: Type.Number(),
   name: Type.String(),
   description: Type.String(),
   isActive: Type.Boolean(),
@@ -11,26 +9,15 @@ export const ProductRow = Type.Object({
   updatedAt: Type.String(),
 });
 
-export const ProductListResponse = Type.Object({
-  ok: Type.Boolean(),
-  items: Type.Array(ProductRow),
-});
-
-export const ProductGetResponse = Type.Object({
-  ok: Type.Boolean(),
-  product: ProductRow,
-});
+export const ProductListResponse = Type.Object({ ok: Type.Boolean(), items: Type.Array(ProductRow) });
+export const ProductGetResponse = Type.Object({ ok: Type.Boolean(), product: ProductRow });
 
 export const ProductCreateBody = Type.Object({
   name: Type.String({ minLength: 2 }),
   description: Type.String({ minLength: 1 }),
-
-  // email defaults (writes to product_channel_settings row for channel='email')
   defaultEmailSenderId: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
   emailHeaderHtml: Type.Optional(Type.Union([Type.String(), Type.Null()])),
   emailFooterHtml: Type.Optional(Type.Union([Type.String(), Type.Null()])),
-
-  // branding (writes to product_branding)
   branding: Type.Optional(
     Type.Object({
       displayName: Type.Optional(Type.Union([Type.String(), Type.Null()])),
@@ -46,21 +33,14 @@ export const ProductCreateBody = Type.Object({
       termsUrl: Type.Optional(Type.Union([Type.String(), Type.Null()])),
       unsubscribeUrl: Type.Optional(Type.Union([Type.String(), Type.Null()])),
       isActive: Type.Optional(Type.Boolean()),
-    })
+    }),
   ),
 });
 
-export const ProductCreateResponse = Type.Object({
-  ok: Type.Boolean(),
-  product: ProductRow,
-});
+export const ProductCreateResponse = Type.Object({ ok: Type.Boolean(), product: ProductRow });
 
 export const ProductPatchBody = Type.Partial(
-  Type.Object({
-    name: Type.String({ minLength: 2 }),
-    description: Type.String({ minLength: 1 }),
-    isActive: Type.Boolean(),
-  })
+  Type.Object({ name: Type.String({ minLength: 2 }), description: Type.String({ minLength: 1 }), isActive: Type.Boolean() }),
 );
 
 export const ProductEmailSettingsRow = Type.Object({
@@ -72,10 +52,7 @@ export const ProductEmailSettingsRow = Type.Object({
   emailFooterHtml: Type.Union([Type.String(), Type.Null()]),
 });
 
-export const ProductEmailSettingsGetResponse = Type.Object({
-  ok: Type.Boolean(),
-  settings: ProductEmailSettingsRow,
-});
+export const ProductEmailSettingsGetResponse = Type.Object({ ok: Type.Boolean(), settings: ProductEmailSettingsRow });
 
 export const ProductEmailSettingsPutBody = Type.Partial(
   Type.Object({
@@ -83,7 +60,7 @@ export const ProductEmailSettingsPutBody = Type.Partial(
     defaultEmailSenderId: Type.Union([Type.Number(), Type.Null()]),
     emailHeaderHtml: Type.Union([Type.String(), Type.Null()]),
     emailFooterHtml: Type.Union([Type.String(), Type.Null()]),
-  })
+  }),
 );
 
 export const ProductBrandingRow = Type.Object({
@@ -103,10 +80,7 @@ export const ProductBrandingRow = Type.Object({
   isActive: Type.Boolean(),
 });
 
-export const ProductBrandingGetResponse = Type.Object({
-  ok: Type.Boolean(),
-  branding: ProductBrandingRow,
-});
+export const ProductBrandingGetResponse = Type.Object({ ok: Type.Boolean(), branding: ProductBrandingRow });
 
 export const ProductBrandingPutBody = Type.Partial(
   Type.Object({
@@ -123,5 +97,5 @@ export const ProductBrandingPutBody = Type.Partial(
     termsUrl: Type.Union([Type.String(), Type.Null()]),
     unsubscribeUrl: Type.Union([Type.String(), Type.Null()]),
     isActive: Type.Boolean(),
-  })
+  }),
 );

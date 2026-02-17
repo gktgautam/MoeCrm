@@ -1,18 +1,14 @@
 import type { preHandlerHookHandler } from "fastify";
 import { Errors } from "@/core/http/app-error";
 import type { AuthTokenPayload } from "@/core/plugins/jwt.auth";
-import type { AppRole } from "./auth.types";
 import { getPermissionsForUser, permissionMatches, type PermissionRequirement } from "./auth.permissions";
-import { resolveOrgIdFromRequest } from "./org-access";
 
 async function getRequestPermissions(req: any): Promise<string[]> {
   if (!req.auth) return [];
   if (Array.isArray(req.authPermissions)) return req.authPermissions;
 
   const userId = Number(req.auth.userId);
-  const orgId = Number(req.auth.orgId);
-
-  req.authPermissions = await getPermissionsForUser(req.server, userId, orgId);
+  req.authPermissions = await getPermissionsForUser(req.server, userId);
   return req.authPermissions;
 }
 
@@ -58,16 +54,8 @@ export function requirePermission(requirement: PermissionRequirement): preHandle
   };
 }
 
-export function requireOrgAccess(options: {
-  source: "query" | "body" | "params";
-  key?: string;
-  allowCrossOrgRoles?: readonly AppRole[];
-}): preHandlerHookHandler {
+export function requireOrgAccess(): preHandlerHookHandler {
   return async (req) => {
-    if (!req.auth) {
-      throw Errors.unauthorized();
-    }
-
-    resolveOrgIdFromRequest(req, options);
+    if (!req.auth) throw Errors.unauthorized();
   };
 }

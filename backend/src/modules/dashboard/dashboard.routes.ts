@@ -1,48 +1,37 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
-import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard";
+import { requireAuth, requirePermission } from "../auth/auth.guard";
 import { fetchDashboardStats } from "./dashboard.service";
-import { resolveOrgIdFromRequest } from "../auth/org-access";
 import { DASHBOARD_ROUTE_REQUIREMENT } from "../auth/auth.route-access";
-
-const QuerySchema = Type.Object({ orgId: Type.Optional(Type.Integer({ minimum: 1 })) });
 
 const ResponseSchema = Type.Object({
   ok: Type.Literal(true),
-  data:
-  Type.Object({
+  data: Type.Object({
     stats: Type.Object({
-    users: Type.Integer(),
-    segments: Type.Integer(),
-    campaigns: Type.Integer(),
-    contacts: Type.Integer(),
+      users: Type.Integer(),
+      segments: Type.Integer(),
+      campaigns: Type.Integer(),
+      contacts: Type.Integer(),
     }),
   }),
 });
 
 const dashboardRoutes: FastifyPluginAsync = async (app) => {
-  app.get<{ Querystring: { orgId?: number } }>("/stats", {
+  app.get("/stats", {
     schema: {
       tags: ["dashboard"],
       security: [{ cookieAuth: [] }],
-      querystring: QuerySchema,
       response: {
         200: ResponseSchema,
-        400: ErrorResponseSchema,
         401: ErrorResponseSchema,
         403: ErrorResponseSchema,
         500: ErrorResponseSchema,
       },
     },
-    preHandler: [
-      requireAuth,
-      requirePermission(DASHBOARD_ROUTE_REQUIREMENT),
-      requireOrgAccess({ source: "query" }),
-    ],
-    handler: async (req) => {
-      const orgId = resolveOrgIdFromRequest(req, { source: "query" });
-      const stats = await fetchDashboardStats(app, orgId);
+    preHandler: [requireAuth, requirePermission(DASHBOARD_ROUTE_REQUIREMENT)],
+    handler: async () => {
+      const stats = await fetchDashboardStats(app);
       return { ok: true as const, data: { stats } };
     },
   });

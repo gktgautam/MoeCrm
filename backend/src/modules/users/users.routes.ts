@@ -1,17 +1,11 @@
 import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
-import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard";
-import { createUserInOrg, listUsersByOrg, updateUserInOrg } from "./users.controller";
-import { resolveOrgIdFromRequest } from "../auth/org-access";
-
-const QuerySchema = Type.Object({
-  orgId: Type.Optional(Type.Integer({ minimum: 1 })),
-});
+import { requireAuth, requirePermission } from "../auth/auth.guard";
+import { createUser, listUsers, updateUser } from "./users.controller";
 
 const UserSchema = Type.Object({
   id: Type.Integer(),
-  org_id: Type.Integer(),
   email: Type.String(),
   role: Type.String(),
   status: Type.Union([Type.Literal("invited"), Type.Literal("active"), Type.Literal("disabled")]),
@@ -29,34 +23,17 @@ const UpdateUserBodySchema = Type.Object({
   status: Type.Optional(Type.Union([Type.Literal("invited"), Type.Literal("active"), Type.Literal("disabled")])),
 });
 
-const ResponseSchema = Type.Object({
-  ok: Type.Literal(true),
-  data:
-  Type.Object({
-    users: Type.Array(UserSchema),
-  }),
-});
+const ResponseSchema = Type.Object({ ok: Type.Literal(true), data: Type.Object({ users: Type.Array(UserSchema) }) });
 
 const usersRoutes: FastifyPluginAsync = async (app) => {
-  app.get<{ Querystring: { orgId?: number } }>("/", {
+  app.get("/", {
     schema: {
       tags: ["users"],
       security: [{ cookieAuth: [] }],
-      querystring: QuerySchema,
-      response: {
-        200: ResponseSchema,
-        400: ErrorResponseSchema,
-        401: ErrorResponseSchema,
-        403: ErrorResponseSchema,
-        500: ErrorResponseSchema,
-      },
+      response: { 200: ResponseSchema, 401: ErrorResponseSchema, 403: ErrorResponseSchema, 500: ErrorResponseSchema },
     },
-    preHandler: [requireAuth, requirePermission({ anyOf: ["users:read"] }), requireOrgAccess({ source: "query" })],
-    handler: async (req) => {
-      const orgId = resolveOrgIdFromRequest(req, { source: "query" });
-      const users = await listUsersByOrg(app, orgId);
-      return { ok: true as const, data: { users } };
-    },
+    preHandler: [requireAuth, requirePermission({ anyOf: ["users:read"] })],
+    handler: async () => ({ ok: true as const, data: { users: await listUsers(app) } }),
   });
 
   app.post<{ Body: { email: string; role_id: number; status?: "invited" | "active" | "disabled" } }>("/", {
@@ -75,9 +52,8 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [requireAuth, requirePermission({ anyOf: ["users:manage"] })],
     handler: async (req) => {
-      const user = await createUserInOrg({
+      const user = await createUser({
         app,
-        orgId: Number(req.auth!.orgId),
         email: req.body.email.trim().toLowerCase(),
         role_id: req.body.role_id,
         status: req.body.status,
@@ -104,9 +80,8 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [requireAuth, requirePermission({ anyOf: ["users:manage"] })],
     handler: async (req) => {
-      const user = await updateUserInOrg({
+      const user = await updateUser({
         app,
-        orgId: Number(req.auth!.orgId),
         targetUserId: req.params.id,
         actorUserId: Number(req.auth!.userId),
         role_id: req.body.role_id,

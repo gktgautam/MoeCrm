@@ -10,7 +10,6 @@ export type PermissionItem = {
 
 export type RoleItem = {
   id: number;
-  org_id: number;
   key: string;
   name: string;
   description: string | null;
@@ -22,7 +21,6 @@ export type RoleItem = {
 
 export type UserItem = {
   id: number;
-  org_id: number;
   email: string;
   role: string;
   status: "invited" | "active" | "disabled";

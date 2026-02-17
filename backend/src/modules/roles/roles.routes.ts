@@ -2,11 +2,10 @@ import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
 import { requireAuth, requirePermission } from "../auth/auth.guard";
-import { createRole, listRolesByOrg, replaceRolePermissions, updateRole } from "./roles.service";
+import { createRole, listRoles, replaceRolePermissions, updateRole } from "./roles.service";
 
 const RoleSchema = Type.Object({
   id: Type.Integer(),
-  org_id: Type.Integer(),
   key: Type.String(),
   name: Type.String(),
   description: Type.Union([Type.String(), Type.Null()]),
@@ -47,9 +46,8 @@ const rolesRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     preHandler: [requireAuth, requirePermission({ anyOf: ["roles:read", "users:manage"] })],
-    handler: async (req) => {
-      const orgId = Number(req.auth!.orgId);
-      const roles = await listRolesByOrg(app, orgId);
+    handler: async () => {
+      const roles = await listRoles(app);
       return { ok: true as const, data: { roles } };
     },
   });
@@ -72,7 +70,6 @@ const rolesRoutes: FastifyPluginAsync = async (app) => {
     handler: async (req) => {
       const role = await createRole({
         app,
-        orgId: Number(req.auth!.orgId),
         key: req.body.key.trim().toLowerCase(),
         name: req.body.name.trim(),
         description: req.body.description?.trim(),
@@ -81,38 +78,34 @@ const rolesRoutes: FastifyPluginAsync = async (app) => {
     },
   });
 
-  app.patch<{ Params: { id: number }; Body: { key?: string; name?: string; description?: string | null } }>(
-    "/:id",
-    {
-      schema: {
-        tags: ["roles"],
-        security: [{ cookieAuth: [] }],
-        params: IdParamSchema,
-        body: UpdateRoleBodySchema,
-        response: {
-          200: Type.Object({ ok: Type.Literal(true), data: Type.Object({ role: RoleSchema }) }),
-          400: ErrorResponseSchema,
-          401: ErrorResponseSchema,
-          403: ErrorResponseSchema,
-          404: ErrorResponseSchema,
-          409: ErrorResponseSchema,
-          500: ErrorResponseSchema,
-        },
-      },
-      preHandler: [requireAuth, requirePermission({ anyOf: ["roles:manage"] })],
-      handler: async (req) => {
-        const role = await updateRole({
-          app,
-          orgId: Number(req.auth!.orgId),
-          roleId: req.params.id,
-          key: req.body.key?.trim().toLowerCase(),
-          name: req.body.name?.trim(),
-          description: typeof req.body.description === "string" ? req.body.description.trim() : req.body.description,
-        });
-        return { ok: true as const, data: { role } };
+  app.patch<{ Params: { id: number }; Body: { key?: string; name?: string; description?: string | null } }>("/:id", {
+    schema: {
+      tags: ["roles"],
+      security: [{ cookieAuth: [] }],
+      params: IdParamSchema,
+      body: UpdateRoleBodySchema,
+      response: {
+        200: Type.Object({ ok: Type.Literal(true), data: Type.Object({ role: RoleSchema }) }),
+        400: ErrorResponseSchema,
+        401: ErrorResponseSchema,
+        403: ErrorResponseSchema,
+        404: ErrorResponseSchema,
+        409: ErrorResponseSchema,
+        500: ErrorResponseSchema,
       },
     },
-  );
+    preHandler: [requireAuth, requirePermission({ anyOf: ["roles:manage"] })],
+    handler: async (req) => {
+      const role = await updateRole({
+        app,
+        roleId: req.params.id,
+        key: req.body.key?.trim().toLowerCase(),
+        name: req.body.name?.trim(),
+        description: typeof req.body.description === "string" ? req.body.description.trim() : req.body.description,
+      });
+      return { ok: true as const, data: { role } };
+    },
+  });
 
   app.put<{ Params: { id: number }; Body: { permissionIds: number[] } }>("/:id/permissions", {
     schema: {
@@ -132,12 +125,7 @@ const rolesRoutes: FastifyPluginAsync = async (app) => {
     preHandler: [requireAuth, requirePermission({ anyOf: ["roles:manage"] })],
     handler: async (req) => {
       const permissionIds = [...new Set(req.body.permissionIds)];
-      const role = await replaceRolePermissions({
-        app,
-        orgId: Number(req.auth!.orgId),
-        roleId: req.params.id,
-        permissionIds,
-      });
+      const role = await replaceRolePermissions({ app, roleId: req.params.id, permissionIds });
       return { ok: true as const, data: { role } };
     },
   });

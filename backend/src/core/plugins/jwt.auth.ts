@@ -6,7 +6,6 @@ import type { AppRole } from "@/modules/auth";
 
 export type AuthTokenPayload = {
   userId: string;
-  orgId: string;
   role: AppRole;
 };
 
@@ -75,21 +74,12 @@ export default fp(async (app) => {
   });
 
   app.addHook("preHandler", async (req) => {
-    req.log.info(
-      {
-        hasCookie: Boolean(req.cookies?.[AUTH_COOKIE_NAME]),
-        hasAuthHeader: typeof req.headers?.authorization === "string",
-      },
-      "auth preHandler start",
-    );
-
     const token = app.getAuthToken(req);
     if (!token) return;
 
     try {
       req.auth = app.verifyAuthToken(token);
-    } catch (err) {
-      req.log.warn({ err }, "auth token invalid");
+    } catch {
       req.auth = undefined;
     }
   });
