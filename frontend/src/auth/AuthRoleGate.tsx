@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import RoleGate from "@/core/rbac/RoleGate";
-import { useAuth } from "@/features/auth";
+import { useAuth } from "@/auth";
  
 
 export default function AuthRoleGate({

@@ -6,7 +6,7 @@ import AuthLayout from "@/app/layouts/AuthLayout";
 import AppShell from "@/app/layouts/AppShell";
 import RouteGuard from "@/app/guards/RouteGuard";
 
-import { LoginPage } from "@/features/auth";
+import { LoginPage } from "@/auth";
 import NotFound from "@/app/pages/NotFound";
 import Unauthorized from "@/app/pages/Unauthorized";
 import RouteError from "@/app/pages/RouteError";

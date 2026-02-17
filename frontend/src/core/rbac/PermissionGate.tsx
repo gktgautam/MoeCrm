@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useAuth } from "@/features/auth";
+import { useAuth } from "@/auth";
 
 /**
  * PermissionGate

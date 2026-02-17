@@ -2,7 +2,7 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/app/layouts/Sidebar";
 import Topbar from "@/app/layouts/Topbar";
-import { useAuth } from "@/features/auth";
+import { useAuth } from "@/auth";
 
 export default function AppShell() {
   const { state, logout } = useAuth();
