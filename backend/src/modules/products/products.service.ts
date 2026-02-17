@@ -1,74 +1,33 @@
-// apps/backend/src/modules/engage/products/products.service.ts
+import type { FastifyInstance } from "fastify";
+
+import type {
+  ProductBrandingPutBodyType,
+  ProductCreateBodyType,
+  ProductEmailSettingsPutBodyType,
+  ProductPatchBodyType,
+} from "./products.schemas";
+import { Pool } from "pg";
+
 type AuthCtx = { userId: string };
 
-export type ProductCreateInput = {
-  name: string;
-  description: string;
-  defaultEmailSenderId?: number | null;
-  emailHeaderHtml?: string | null;
-  emailFooterHtml?: string | null;
-  branding?: {
-    displayName?: string | null;
-    websiteUrl?: string | null;
-    trackingDomain?: string | null;
-    senderDomain?: string | null;
-    logoUrl?: string | null;
-    faviconUrl?: string | null;
-    brandColor?: string | null;
-    supportEmail?: string | null;
-    addressText?: string | null;
-    privacyPolicyUrl?: string | null;
-    termsUrl?: string | null;
-    unsubscribeUrl?: string | null;
-    isActive?: boolean;
-  };
-};
 
-export type ProductPatchInput = Partial<{
-  name: string;
-  description: string;
-  isActive: boolean;
-}>;
 
-export type ProductEmailSettingsPutInput = Partial<{
-  isEnabled: boolean;
-  defaultEmailSenderId: number | null;
-  emailHeaderHtml: string | null;
-  emailFooterHtml: string | null;
-}>;
-
-export type ProductBrandingPutInput = Partial<{
-  displayName: string | null;
-  websiteUrl: string | null;
-  trackingDomain: string | null;
-  senderDomain: string | null;
-  logoUrl: string | null;
-  faviconUrl: string | null;
-  brandColor: string | null;
-  supportEmail: string | null;
-  addressText: string | null;
-  privacyPolicyUrl: string | null;
-  termsUrl: string | null;
-  unsubscribeUrl: string | null;
-  isActive: boolean;
-}>;
-
-export function productsService(infra: { dbEngage: any }) {
-  const db = infra.dbEngage;
+export function productsService(app: FastifyInstance) {
+ const db = app.dbEngage as unknown as Pool;
 
   return {
     async list() {
-      const res = await infra.dbEngage.query(
+      const res = await db.query(
         `SELECT id, name, description,
                 is_active AS "isActive",
                 created_at AS "createdAt", updated_at AS "updatedAt"
          FROM products
-         ORDER BY id DESC`,
+         ORDER BY id DESC`
       );
       return res.rows;
     },
 
-    async get(ctx: AuthCtx, id: number) {
+    async get(id: number) {
       return db.oneOrNone(
         `SELECT id, name, description,
                 is_active AS "isActive",
@@ -79,7 +38,8 @@ export function productsService(infra: { dbEngage: any }) {
       );
     },
 
-    async create(ctx: AuthCtx, input: ProductCreateInput) {
+    // NOTE: create uses ctx like other methods (patch / branding / settings)
+    async create(userId:number, input: ProductCreateBodyType) {
       return db.tx(async (tx: any) => {
         const product = await tx.one(
           `INSERT INTO products (name, description, is_active, created_by, updated_by)
@@ -87,7 +47,7 @@ export function productsService(infra: { dbEngage: any }) {
            RETURNING id, name, description,
                      is_active AS "isActive",
                      created_at AS "createdAt", updated_at AS "updatedAt"`,
-          [input.name, input.description, true, ctx.userId]
+          [input.name, input.description, true, userId]
         );
 
         // Email settings row (channel='email') always ensured
@@ -135,7 +95,7 @@ export function productsService(infra: { dbEngage: any }) {
       });
     },
 
-    async patch(ctx: AuthCtx, id: number, input: ProductPatchInput) {
+    async patch(userId: number, id: number, input: ProductPatchBodyType) {
       return db.oneOrNone(
         `UPDATE products
          SET name=COALESCE($2,name),
@@ -147,11 +107,11 @@ export function productsService(infra: { dbEngage: any }) {
          RETURNING id, name, description,
                    is_active AS "isActive",
                    created_at AS "createdAt", updated_at AS "updatedAt"`,
-        [id, input.name ?? null, input.description ?? null, input.isActive ?? null, ctx.userId]
+        [id, input.name ?? null, input.description ?? null, input.isActive ?? null, userId]
       );
     },
 
-    async getEmailSettings(ctx: AuthCtx, productId: number) {
+    async getEmailSettings(productId: number) {
       return db.oneOrNone(
         `SELECT product_id AS "productId",
                 channel,
@@ -165,7 +125,10 @@ export function productsService(infra: { dbEngage: any }) {
       );
     },
 
-    async putEmailSettings(ctx: AuthCtx, productId: number, input: ProductEmailSettingsPutInput) {
+    async putEmailSettings( 
+      productId: number,
+      input: ProductEmailSettingsPutBodyType
+    ) {
       return db.oneOrNone(
         `UPDATE product_channel_settings
          SET is_enabled=COALESCE($2,is_enabled),
@@ -180,11 +143,17 @@ export function productsService(infra: { dbEngage: any }) {
                 default_email_sender_id AS "defaultEmailSenderId",
                 email_header_html AS "emailHeaderHtml",
                 email_footer_html AS "emailFooterHtml"`,
-        [productId, input.isEnabled ?? null, input.defaultEmailSenderId ?? null, input.emailHeaderHtml ?? null, input.emailFooterHtml ?? null]
+        [
+          productId,
+          input.isEnabled ?? null,
+          input.defaultEmailSenderId ?? null,
+          input.emailHeaderHtml ?? null,
+          input.emailFooterHtml ?? null,
+        ]
       );
     },
 
-    async getBranding(ctx: AuthCtx, productId: number) {
+    async getBranding(productId: number) {
       return db.oneOrNone(
         `SELECT product_id AS "productId",
                 display_name AS "displayName",
@@ -206,7 +175,7 @@ export function productsService(infra: { dbEngage: any }) {
       );
     },
 
-    async putBranding(ctx: AuthCtx, productId: number, input: ProductBrandingPutInput) {
+    async putBranding(productId: number, input: ProductBrandingPutBodyType) {
       // upsert (insert if missing, else update)
       return db.one(
         `INSERT INTO product_branding

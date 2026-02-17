@@ -2,7 +2,7 @@ import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
 import { requireAuth, requirePermission } from "../auth/auth.guard";
-import { createRole, listRolesByOrg, replaceRolePermissions, updateRole } from "./roles.service";
+import { createRole, listRoles, replaceRolePermissions, updateRole } from "./roles.service";
 
 const RoleSchema = Type.Object({
   id: Type.Integer(),
@@ -47,7 +47,7 @@ const rolesRoutes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [requireAuth, requirePermission({ anyOf: ["roles:read", "users:manage"] })],
     handler: async (req) => {
-      const roles = await listRolesByOrg(app);
+      const roles = await listRoles(app);
       return { ok: true as const, data: { roles } };
     },
   });

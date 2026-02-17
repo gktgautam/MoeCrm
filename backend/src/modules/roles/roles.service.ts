@@ -12,7 +12,7 @@ export type RoleListItem = {
   permissions: string[];
 };
 
-export async function listRolesByOrg(app: FastifyInstance): Promise<RoleListItem[]> {
+export async function listRoles(app: FastifyInstance): Promise<RoleListItem[]> {
   const { rows } = await app.dbEngage.query<RoleListItem & { permissions: string[] | null }>(
     `
       select

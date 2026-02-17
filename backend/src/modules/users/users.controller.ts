@@ -10,7 +10,7 @@ export type AppUserListItem = {
   created_at: string;
 };
 
-export async function listUsersByOrg(app: FastifyInstance): Promise<AppUserListItem[]> {
+export async function listUsers(app: FastifyInstance): Promise<AppUserListItem[]> {
   const { rows } = await app.dbEngage.query<AppUserListItem>(
     `
       select u.id, u.email, r.key as role, u.status, u.created_at::text
@@ -25,7 +25,7 @@ export async function listUsersByOrg(app: FastifyInstance): Promise<AppUserListI
   return rows;
 }
 
-export async function createUserInOrg(args: {
+export async function createUser(args: {
   app: FastifyInstance;
   email: string;
   role_id: number;
@@ -52,7 +52,7 @@ export async function createUserInOrg(args: {
   }
 }
 
-export async function updateUserInOrg(args: {
+export async function updateUser(args: {
   app: FastifyInstance;
   targetUserId: number;
   actorUserId: number;

@@ -1,6 +1,6 @@
 // apps/backend/src/modules/engage/products/products.routes.ts
 import type { FastifyPluginAsync } from "fastify"; 
-import { requireAuth, requireOrgAccess, requirePermission } from "../auth/auth.guard";
+import { requireAuth, requirePermission } from "../auth/auth.guard";
 import { productsController } from "./products.controller";
 import {
   ProductCreateBody,

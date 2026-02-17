@@ -2,7 +2,7 @@ import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsync } from "fastify";
 import { ErrorResponseSchema } from "@/core/http/error-response";
 import { requireAuth, requirePermission } from "../auth/auth.guard";
-import { createUserInOrg, listUsersByOrg, updateUserInOrg } from "./users.controller";
+import { createUser, listUsers, updateUser } from "./users.controller";
 
 const UserSchema = Type.Object({
   id: Type.Integer(),
@@ -46,7 +46,7 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [requireAuth, requirePermission({ anyOf: ["users:read"] })],
     handler: async (req) => {
-      const users = await listUsersByOrg(app);
+      const users = await listUsers(app);
       return { ok: true as const, data: { users } };
     },
   });
@@ -67,7 +67,7 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [requireAuth, requirePermission({ anyOf: ["users:manage"] })],
     handler: async (req) => {
-      const user = await createUserInOrg({
+      const user = await createUser({
         app,
         email: req.body.email.trim().toLowerCase(),
         role_id: req.body.role_id,
@@ -95,7 +95,7 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
     },
     preHandler: [requireAuth, requirePermission({ anyOf: ["users:manage"] })],
     handler: async (req) => {
-      const user = await updateUserInOrg({
+      const user = await updateUser({
         app,
         targetUserId: req.params.id,
         actorUserId: Number(req.auth!.userId),

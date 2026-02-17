@@ -1,5 +1,5 @@
 // apps/backend/src/modules/engage/products/products.schemas.ts
-import { Type } from "@sinclair/typebox";
+import { Static, Type } from "@sinclair/typebox";
 
 export const ProductRow = Type.Object({
   id: Type.Number(),
@@ -10,15 +10,21 @@ export const ProductRow = Type.Object({
   updatedAt: Type.String(),
 });
 
+export type ProductRowType = Static<typeof ProductRow>;
+
 export const ProductListResponse = Type.Object({
   ok: Type.Boolean(),
   items: Type.Array(ProductRow),
 });
 
+export type ProductListResponseType = Static<typeof ProductListResponse>;
+
 export const ProductGetResponse = Type.Object({
   ok: Type.Boolean(),
   product: ProductRow,
 });
+
+export type ProductGetResponseType = Static<typeof ProductGetResponse>;
 
 export const ProductCreateBody = Type.Object({
   name: Type.String({ minLength: 2 }),
@@ -49,10 +55,14 @@ export const ProductCreateBody = Type.Object({
   ),
 });
 
+export type ProductCreateBodyType = Static<typeof ProductCreateBody>;
+
 export const ProductCreateResponse = Type.Object({
   ok: Type.Boolean(),
   product: ProductRow,
 });
+
+export type ProductCreateResponseType = Static<typeof ProductCreateResponse>;
 
 export const ProductPatchBody = Type.Partial(
   Type.Object({
@@ -61,6 +71,8 @@ export const ProductPatchBody = Type.Partial(
     isActive: Type.Boolean(),
   })
 );
+
+export type ProductPatchBodyType = Static<typeof ProductPatchBody>;
 
 export const ProductEmailSettingsRow = Type.Object({
   productId: Type.Number(),
@@ -71,10 +83,16 @@ export const ProductEmailSettingsRow = Type.Object({
   emailFooterHtml: Type.Union([Type.String(), Type.Null()]),
 });
 
+export type ProductEmailSettingsRowType = Static<typeof ProductEmailSettingsRow>;
+
 export const ProductEmailSettingsGetResponse = Type.Object({
   ok: Type.Boolean(),
   settings: ProductEmailSettingsRow,
 });
+
+export type ProductEmailSettingsGetResponseType = Static<
+  typeof ProductEmailSettingsGetResponse
+>;
 
 export const ProductEmailSettingsPutBody = Type.Partial(
   Type.Object({
@@ -84,6 +102,10 @@ export const ProductEmailSettingsPutBody = Type.Partial(
     emailFooterHtml: Type.Union([Type.String(), Type.Null()]),
   })
 );
+
+export type ProductEmailSettingsPutBodyType = Static<
+  typeof ProductEmailSettingsPutBody
+>;
 
 export const ProductBrandingRow = Type.Object({
   productId: Type.Number(),
@@ -102,10 +124,14 @@ export const ProductBrandingRow = Type.Object({
   isActive: Type.Boolean(),
 });
 
+export type ProductBrandingRowType = Static<typeof ProductBrandingRow>;
+
 export const ProductBrandingGetResponse = Type.Object({
   ok: Type.Boolean(),
   branding: ProductBrandingRow,
 });
+
+export type ProductBrandingGetResponseType = Static<typeof ProductBrandingGetResponse>;
 
 export const ProductBrandingPutBody = Type.Partial(
   Type.Object({
@@ -124,3 +150,5 @@ export const ProductBrandingPutBody = Type.Partial(
     isActive: Type.Boolean(),
   })
 );
+
+export type ProductBrandingPutBodyType = Static<typeof ProductBrandingPutBody>;

@@ -35,6 +35,4 @@ export function requirePermission(requirement: PermissionRequirement): preHandle
   };
 }
 
-export function requireOrgAccess(): preHandlerHookHandler {
-  return async () => undefined;
-}
+ 
