@@ -6,5 +6,6 @@ export type AppRoute = {
   navLabel?: string;
   anyOf?: string[];
   allOf?: string[];
-  children?:any
+  children?:any,
+  icon:any
 };

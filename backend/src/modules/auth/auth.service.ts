@@ -1,9 +1,19 @@
+import { FastifyInstance } from "fastify";
 import { Errors } from "@/core/http/app-error";
 import argon2 from "argon2";
 import type { AppRole } from "./auth.types.js";
 
-export const authService = {
-  resolveRoleId: async (db: any, role: AppRole | undefined) => {
+import { bindDb } from "@/core/db/useDb";  
+import { Pool } from "pg";
+
+
+
+export function authService(app: FastifyInstance) {
+ 
+  const pool = app.dbEngage as Pool;
+  const db = bindDb(pool);
+
+  const resolveRoleId = async (db: any, role: AppRole | undefined) => {
     const roleKey = role ?? "admin";
     const roleRes = await db.query(
       `
@@ -18,7 +28,11 @@ export const authService = {
     const roleRow = roleRes.rows[0] as { id: number } | undefined;
     if (!roleRow) throw Errors.badRequest("Invalid role");
     return roleRow.id;
-  },
+  };
+
+  return {
+
+  resolveRoleId,
 
   createAppUser: async (args: { db: any; email: string; password: string; role?: AppRole }) => {
     const passwordHash = await argon2.hash(args.password, {
@@ -28,7 +42,7 @@ export const authService = {
       parallelism: 1,
     });
 
-    const roleId = await authService.resolveRoleId(args.db, args.role);
+    const roleId = await resolveRoleId(args.db, args.role);
 
     try {
       const res = await args.db.query(
@@ -68,4 +82,8 @@ export const authService = {
 
     return { id: user.id, email: user.email, role: user.role };
   },
-};
+  }
+
+}
+
+ 

@@ -8,7 +8,7 @@ import type {
   ProductPatchBodyType,
 } from "./products.schemas";
  
-
+ 
 import { bindDb } from "@/core/db/useDb"; // adjust path
 
  

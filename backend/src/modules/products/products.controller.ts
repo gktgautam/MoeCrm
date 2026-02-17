@@ -1,15 +1,10 @@
  
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { productsService } from "./products.service";
 import { Errors } from "@/core/http/app-error";
 
- 
+import { productsService } from "./products.service";
 
-function ctx(req: FastifyRequest) {
-  return {  
-    dbEngage: req.server.dbEngage, 
-    userId: req.auth!.userId };
-}
+ 
 
 export function productsController(app: FastifyInstance) {
  const svc = productsService(app);

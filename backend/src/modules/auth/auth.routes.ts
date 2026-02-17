@@ -8,6 +8,7 @@ import { requireAuth } from "./auth.guard";
  
 const authRoutes: FastifyPluginAsync = async (app) => {
 
+   const ctrl = authController(app);
  
    // Add default tags to all routes in this plugin
   app.addHook("onRoute", (routeOptions) => {
@@ -28,7 +29,7 @@ const authRoutes: FastifyPluginAsync = async (app) => {
         500: ErrorResponseSchema,
       },
     },
-    handler: authController.signup,
+    handler: ctrl.signup,
   });
 
   app.post("/login", {
@@ -41,7 +42,7 @@ const authRoutes: FastifyPluginAsync = async (app) => {
         500: ErrorResponseSchema,
       },
     },
-    handler: authController.login,
+    handler: ctrl.login,
   });
 
   app.get("/me", {
@@ -54,14 +55,14 @@ const authRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     preHandler: requireAuth,
-    handler: authController.me,
+    handler: ctrl.me,
   });
 
   app.post("/logout", {
     schema: {
       response: { 200: EmptySuccessResponseSchema },
     },
-    handler: authController.logout,
+    handler: ctrl.logout,
   });
 };
 

@@ -4,6 +4,7 @@ export type NavItem = {
   label: string;
   to: string;
   children?: NavItem[];
+  icon:any
 };
 
   
@@ -13,7 +14,8 @@ function buildNav(routes: AppRoute[]): NavItem[] {
     .map((route) => {
       const item: NavItem = {
         label: route.navLabel!, // safe because filtered above
-        to: route.path
+        to: route.path,
+        icon:route.icon
       };
 
       if (route.children && route.children.length > 0) {
