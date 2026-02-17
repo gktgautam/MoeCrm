@@ -37,8 +37,8 @@ export async function createUser(args: {
   try {
     const { rows } = await args.app.dbEngage.query<AppUserListItem>(
       `
-      insert into app_users (org_id, email, role_id, status, invited_at)
-      values (1, $1, $2, $3, case when $3 = 'invited' then now() else null end)
+      insert into app_users (email, role_id, status, invited_at)
+      values ($1, $2, $3, case when $3 = 'invited' then now() else null end)
       returning id, email,
       (select key from app_roles where id = role_id) as role,
       status,

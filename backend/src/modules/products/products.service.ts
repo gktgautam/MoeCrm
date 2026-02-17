@@ -52,8 +52,8 @@ export function productsService(infra: { dbEngage: any }) {
 
     async create(ctx: AuthCtx, input: ProductCreateInput) {
       const { rows } = await infra.dbEngage.query(
-        `INSERT INTO products (org_id, name, description, is_active, created_by, updated_by)
-         VALUES (1,$1,$2,true,$3,$3)
+        `INSERT INTO products (name, description, is_active, created_by, updated_by)
+         VALUES ($1,$2,true,$3,$3)
          RETURNING id, name, description, is_active AS "isActive", created_at AS "createdAt", updated_at AS "updatedAt"`,
         [input.name, input.description, ctx.userId],
       );
@@ -105,8 +105,8 @@ export function productsService(infra: { dbEngage: any }) {
     async putBranding(productId: number, input: ProductBrandingPutInput) {
       const { rows } = await infra.dbEngage.query(
         `INSERT INTO product_branding
-         (product_id, org_id, display_name, website_url, tracking_domain, sender_domain, logo_url, favicon_url, brand_color, support_email, address_text, privacy_policy_url, terms_url, unsubscribe_url, is_active, created_at, updated_at)
-         VALUES ($1,1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,COALESCE($14,true),now(),now())
+         (product_id, display_name, website_url, tracking_domain, sender_domain, logo_url, favicon_url, brand_color, support_email, address_text, privacy_policy_url, terms_url, unsubscribe_url, is_active, created_at, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,COALESCE($14,true),now(),now())
          ON CONFLICT (product_id)
          DO UPDATE SET
            display_name=COALESCE(EXCLUDED.display_name, product_branding.display_name),

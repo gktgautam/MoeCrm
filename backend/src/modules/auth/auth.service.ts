@@ -41,8 +41,8 @@ export const authService = {
     try {
       const res = await args.db.query(
         `
-        insert into app_users (org_id, email, password_hash, role_id)
-        values (1, $1, $2, $3)
+        insert into app_users (email, password_hash, role_id)
+        values ($1, $2, $3)
         returning id, email, role_id
       `,
         [args.email.toLowerCase(), passwordHash, roleId],

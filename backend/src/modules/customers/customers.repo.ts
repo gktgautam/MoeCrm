@@ -39,19 +39,17 @@ export async function upsertContactsFromCrm(dbEngage: Pool, rows: CrmCustomerRow
   const placeholders: string[] = [];
 
   rows.forEach((row, index) => {
-    const offset = index * 8;
-    placeholders.push(
-      `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8})`,
-    );
+    const offset = index * 7;
+    placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7})`);
 
-    values.push(1, row.customer_id, row.email, row.phone, row.name, row.city, row.plan, row.updated_at ?? new Date());
+    values.push(row.customer_id, row.email, row.phone, row.name, row.city, row.plan, row.updated_at ?? new Date());
   });
 
   const sql = `
     insert into contacts
-      (org_id, crm_customer_id, email, phone, first_name, city, plan, last_synced_at)
+      (crm_customer_id, email, phone, first_name, city, plan, last_synced_at)
     values ${placeholders.join(",")}
-    on conflict (org_id, crm_customer_id)
+    on conflict (crm_customer_id)
     do update set
       email = excluded.email,
       phone = excluded.phone,

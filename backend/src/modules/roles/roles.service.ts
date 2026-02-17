@@ -40,8 +40,8 @@ export async function createRole(args: { app: FastifyInstance; key: string; name
   try {
     const { rows } = await args.app.dbEngage.query<RoleListItem>(
       `
-      insert into app_roles (org_id, key, name, description, is_system)
-      values (1, $1, $2, $3, false)
+      insert into app_roles (key, name, description, is_system)
+      values ($1, $2, $3, false)
       returning id, key, name, description, is_system, created_at::text, updated_at::text,
       '{}'::text[] as permissions
       `,
