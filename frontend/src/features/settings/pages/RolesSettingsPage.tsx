@@ -1,22 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-} from "@mui/material";
+import * as Dialog from "@radix-ui/react-dialog";
+import * as Checkbox from "@radix-ui/react-checkbox";
+import PermissionGate from "@/core/rbac/PermissionGate";
+
 import {
   createRole,
   fetchPermissions,
@@ -26,24 +12,23 @@ import {
   type PermissionItem,
   type RoleItem,
 } from "@/core/api/admin";
-import PermissionGate from "@/core/rbac/PermissionGate";
 
 export default function RolesSettingsPage() {
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
   const [openCreate, setOpenCreate] = useState(false);
+
   const [roleName, setRoleName] = useState("");
   const [roleKey, setRoleKey] = useState("");
+
   const [selectedRole, setSelectedRole] = useState<RoleItem | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
-  const permissionIdByKey = useMemo(
-    () => Object.fromEntries(permissions.map((permission) => [permission.key, permission.id])),
-    [permissions],
-  );
-
   const load = async () => {
-    const [rolesRes, permissionsRes] = await Promise.all([fetchRoles(), fetchPermissions()]);
+    const [rolesRes, permissionsRes] = await Promise.all([
+      fetchRoles(),
+      fetchPermissions(),
+    ]);
     setRoles(rolesRes);
     setPermissions(permissionsRes);
   };
@@ -51,6 +36,11 @@ export default function RolesSettingsPage() {
   useEffect(() => {
     void load();
   }, []);
+
+  const permissionIdByKey = useMemo(
+    () => Object.fromEntries(permissions.map((p) => [p.key, p.id])),
+    [permissions]
+  );
 
   const onCreate = async () => {
     await createRole({ key: roleKey, name: roleName });
@@ -67,9 +57,10 @@ export default function RolesSettingsPage() {
 
   const onSavePermissions = async () => {
     if (!selectedRole) return;
+
     const permissionIds = selectedPermissions
-      .map((permissionKey) => permissionIdByKey[permissionKey])
-      .filter((permissionId): permissionId is number => Boolean(permissionId));
+      .map((k) => permissionIdByKey[k])
+      .filter(Boolean);
 
     await replaceRolePermissions(selectedRole.id, permissionIds);
     setSelectedRole(null);
@@ -77,31 +68,46 @@ export default function RolesSettingsPage() {
   };
 
   return (
-    <Stack spacing={2}>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="h5">Roles</Typography>
-        <PermissionGate allow={["roles:manage"]} mode="any">
-          <Button variant="contained" onClick={() => setOpenCreate(true)}>Create role</Button>
-        </PermissionGate>
-      </Box>
+    <div className="flex flex-col gap-4">
 
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Key</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>System</TableCell>
-            <TableCell>Permissions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Roles</h2>
+
+        <PermissionGate allow={["roles:manage"]} mode="any">
+          <button
+            className="px-4 py-2 bg-primary text-primary-contrast rounded-md shadow"
+            onClick={() => setOpenCreate(true)}
+          >
+            Create role
+          </button>
+        </PermissionGate>
+      </div>
+
+      {/* Table */}
+      <table className="table-auto w-full border-collapse">
+        <thead>
+          <tr className="border-b border-border text-left">
+            <th className="p-2">Key</th>
+            <th className="p-2">Name</th>
+            <th className="p-2">System</th>
+            <th className="p-2">Permissions</th>
+          </tr>
+        </thead>
+        <tbody>
           {roles.map((role) => (
-            <TableRow key={role.id}>
-              <TableCell>{role.key}</TableCell>
-              <TableCell>
-                <PermissionGate allow={["roles:manage"]} mode="any" fallback={<>{role.name}</>}>
-                  <TextField
-                    size="small"
+            <tr key={role.id} className="border-b border-border">
+              <td className="p-2">{role.key}</td>
+
+              {/* Editable Role Name */}
+              <td className="p-2">
+                <PermissionGate
+                  allow={["roles:manage"]}
+                  mode="any"
+                  fallback={<span>{role.name}</span>}
+                >
+                  <input
+                    className="w-60 border border-border rounded px-2 py-1"
                     value={role.name}
                     onChange={async (event) => {
                       await updateRole(role.id, { name: event.target.value });
@@ -109,61 +115,121 @@ export default function RolesSettingsPage() {
                     }}
                   />
                 </PermissionGate>
-              </TableCell>
-              <TableCell>{role.is_system ? "Yes" : "No"}</TableCell>
-              <TableCell>
-                <Button onClick={() => openEditor(role)} size="small">Edit permissions</Button>
-              </TableCell>
-            </TableRow>
+              </td>
+
+              <td className="p-2">{role.is_system ? "Yes" : "No"}</td>
+
+              <td className="p-2">
+                <button
+                  className="px-3 py-1 text-sm bg-surface border rounded"
+                  onClick={() => openEditor(role)}
+                >
+                  Edit permissions
+                </button>
+              </td>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
+        </tbody>
+      </table>
 
-      <Dialog open={openCreate} onClose={() => setOpenCreate(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Create role</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} mt={1}>
-            <TextField label="Role key" value={roleKey} onChange={(event) => setRoleKey(event.target.value)} />
-            <TextField label="Role name" value={roleName} onChange={(event) => setRoleName(event.target.value)} />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenCreate(false)}>Cancel</Button>
-          <Button onClick={onCreate} variant="contained" disabled={!roleKey || !roleName}>Create</Button>
-        </DialogActions>
-      </Dialog>
+      {/* Create Role Dialog */}
+      <Dialog.Root open={openCreate} onOpenChange={setOpenCreate}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/40" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 w-[400px] -translate-x-1/2 -translate-y-1/2 bg-surface p-5 rounded-lg shadow-lg border border-border">
+            <Dialog.Title className="text-lg font-medium">Create role</Dialog.Title>
 
-      <Dialog open={Boolean(selectedRole)} onClose={() => setSelectedRole(null)} fullWidth maxWidth="md">
-        <DialogTitle>Edit role permissions: {selectedRole?.name}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={1} mt={1}>
-            {permissions.map((permission) => (
-              <FormControlLabel
-                key={permission.id}
-                control={
-                  <Checkbox
+            <div className="mt-4 flex flex-col gap-3">
+              <input
+                placeholder="Role key"
+                className="border border-border rounded px-3 py-2"
+                value={roleKey}
+                onChange={(e) => setRoleKey(e.target.value)}
+              />
+              <input
+                placeholder="Role name"
+                className="border border-border rounded px-3 py-2"
+                value={roleName}
+                onChange={(e) => setRoleName(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                className="px-4 py-2 border rounded"
+                onClick={() => setOpenCreate(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="px-4 py-2 bg-primary text-primary-contrast rounded disabled:opacity-50"
+                disabled={!roleKey || !roleName}
+                onClick={onCreate}
+              >
+                Create
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Permission Editor Dialog */}
+      <Dialog.Root
+        open={!!selectedRole}
+        onOpenChange={() => setSelectedRole(null)}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/40" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 w-[600px] -translate-x-1/2 -translate-y-1/2 bg-surface p-6 rounded-lg shadow-lg border border-border">
+            <Dialog.Title className="text-lg font-medium">
+              Edit permissions: {selectedRole?.name}
+            </Dialog.Title>
+
+            <div className="mt-4 flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2">
+              {permissions.map((permission) => (
+                <label key={permission.id} className="flex items-center gap-3">
+                  <Checkbox.Root
                     checked={selectedPermissions.includes(permission.key)}
-                    onChange={(_event, checked) => {
+                    onCheckedChange={(checked) => {
                       setSelectedPermissions((current) =>
                         checked
                           ? [...current, permission.key]
-                          : current.filter((key) => key !== permission.key),
+                          : current.filter((k) => k !== permission.key)
                       );
                     }}
-                  />
-                }
-                label={`${permission.key} — ${permission.description ?? ""}`}
-              />
-            ))}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSelectedRole(null)}>Cancel</Button>
-          <PermissionGate allow={["roles:manage"]} mode="any">
-            <Button onClick={onSavePermissions} variant="contained">Save</Button>
-          </PermissionGate>
-        </DialogActions>
-      </Dialog>
-    </Stack>
+                    className="w-4 h-4 border border-border rounded grid place-items-center"
+                  >
+                    <Checkbox.Indicator>✔</Checkbox.Indicator>
+                  </Checkbox.Root>
+
+                  <span>
+                    {permission.key} — {permission.description ?? ""}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                className="px-4 py-2 border rounded"
+                onClick={() => setSelectedRole(null)}
+              >
+                Cancel
+              </button>
+
+              <PermissionGate allow={["roles:manage"]} mode="any">
+                <button
+                  className="px-4 py-2 bg-primary text-primary-contrast rounded"
+                  onClick={onSavePermissions}
+                >
+                  Save
+                </button>
+              </PermissionGate>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </div>
   );
 }

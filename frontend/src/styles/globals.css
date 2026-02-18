@@ -2,39 +2,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
 
 @import "tailwindcss";
-@import "../theme/tokens.css";
-
-@theme {
-  --color-bg: var(--c-bg);
-  --color-surface: var(--c-surface);
-  --color-border: var(--c-border);
-
-  --color-text: var(--c-text);
-  --color-muted: var(--c-muted);
-
-  --color-primary: var(--c-primary);
-  --color-primary-contrast: var(--c-primary-contrast);
-  --color-secondary: var(--c-secondary);
-
-  --color-success: var(--c-success);
-  --color-warning: var(--c-warning);
-  --color-danger: var(--c-danger);
-  --color-info: var(--c-info);
-
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-
-  --shadow-sm: var(--shadow-sm);
-  --shadow-md: var(--shadow-md);
-  --shadow-lg: var(--shadow-lg);
-}
-
+ 
+ 
 html, body, #root { height: 100%; }
 
-body {
-  background: var(--c-bg);
-  color: var(--c-text);
+body { 
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
