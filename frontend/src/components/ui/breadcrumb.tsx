@@ -12,51 +12,22 @@ interface BreadcrumbProps {
 
 const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
   return (
-    <nav aria-label="breadcrumb">
-      <ol style={styles.list}>
+    <nav aria-label="breadcrumb" className="py-4 px-3 text-sm bg-surface/90 rounded-bl">
+      <ol className="flex list-none p-0 m-0">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
 
           return (
-            <li key={index} style={styles.item}>
-              {!isLast && item.path ? (
-                <Link to={item.path} style={styles.link}>
-                  {item.label}
-                </Link>
-              ) : (
-                <span style={styles.current}>{item.label}</span>
-              )}
+            <li key={index} className="flex items-center">
+               <span>{item.label}</span>
 
-              {!isLast && <span style={styles.separator}>/</span>}
+              {!isLast && <span className="mx-2">{'>'}</span>}
             </li>
           );
         })}
       </ol>
     </nav>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  list: {
-    display: "flex",
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
-  },
-  item: {
-    display: "flex",
-    alignItems: "center",
-  },
-  link: {
-    textDecoration: "none",
-    color: "#007bff",
-  },
-  current: {
-    color: "#555",
-  },
-  separator: {
-    margin: "0 8px",
-  },
 };
 
 export default Breadcrumb;

@@ -3,9 +3,15 @@ import { NavLink } from "react-router-dom";
 import { NAV, type NavItem } from "@/app/layouts/navigation";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
-export default function Sidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
-  const [open, setOpen] = useState(true);
-  const toggleSidebar = () => setOpen((v) => !v);
+export default function Sidebar({ allowedRoutes , onToggle }: { allowedRoutes: string[], onToggle?: (sideBarOpen: boolean) => void; }) {
+  
+  const [sideBarOpen, setsideBarOpen] = useState(true);
+  const toggleSidebar = () =>
+  setsideBarOpen((v) => {
+    const next = !v;
+    onToggle?.(next);   // 🔥 notify parent
+    return next;
+  });
 
   // type-guard to remove null values safely
   const isNavItem = (x: NavItem | null): x is NavItem => x !== null;
@@ -53,18 +59,18 @@ export default function Sidebar({ allowedRoutes }: { allowedRoutes: string[] }) 
           className={({ isActive }) =>
             [
               "flex items-center gap-2 rounded px-3 py-2 text-sm font-medium",
-              open ? "justify-start" : "justify-center",
+              sideBarOpen ? "justify-start" : "justify-center",
               isActive ? "bg-gray-900 text-white" : "text-gray-700 hover:bg-gray-100",
             ].join(" ")
           }
-          title={!open ? item.label : undefined}
+          title={!sideBarOpen ? item.label : undefined}
         >
           {item.icon && <RenderIcon icon={(item as any).icon} />}
-          {open && <span className="truncate">{item.label}</span>}
+          {sideBarOpen && <span className="truncate">{item.label}</span>}
         </NavLink>
 
         {item.children && (
-          <div className={["mt-1 space-y-1", open ? "ml-4" : "ml-0"].join(" ")}>
+          <div className={["mt-1 space-y-1", sideBarOpen ? "ml-4" : "ml-0"].join(" ")}>
             {item.children.map((child) => (
               <NavItemComponent key={child.to} item={child} />
             ))}
@@ -75,32 +81,17 @@ export default function Sidebar({ allowedRoutes }: { allowedRoutes: string[] }) 
   }
 
   return (
-    <aside
-      className={[
-        "border-r bg-white p-4 relative select-none transition-[width] duration-300 hidden md:block",
-        open ? "w-60" : "w-16",
-      ].join(" ")}
-    >
-      <div
-        className={[
-          "fixed left-0 top-0 h-full transition-[width] duration-300 bg-white border-r",
-          open ? "w-60" : "w-16",
-        ].join(" ")}
-      >
-        <div
-          className={[
-            "flex items-center px-4 py-4 border-b border-white/20",
-            open ? "justify-between" : "justify-center",
-          ].join(" ")}
-        >
-          {open && (
+    <aside className={`fixed h-full left-0 z-10 overflow-auto border-r bg-surface p-4 select-none transition-all duration-300 ${sideBarOpen?'w-60':'w-20'}`}>
+      
+        <div className="flex items-center px-4 py-4 border-b border-white/20">
+          {sideBarOpen && (
             <div className="flex items-center gap-2">
               <img src="/images/equentis_logo.svg" alt="Logo" className="h-8 w-auto" />
             </div>
           )}
 
-          <button onClick={toggleSidebar} className="rounded-full p-2 hover:bg-gray-100">
-            {open ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+          <button onClick={toggleSidebar} className="rounded-full p-1 bg-bg absolute top-3 -right-2 z-20">
+            {sideBarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
           </button>
         </div>
 
@@ -109,7 +100,7 @@ export default function Sidebar({ allowedRoutes }: { allowedRoutes: string[] }) 
             <NavItemComponent key={item.to} item={item} />
           ))}
         </nav>
-      </div>
+      
     </aside>
   );
 }
