@@ -1,7 +1,7 @@
 import PermissionGate from "@/core/rbac/PermissionGate";
 // import Breadcrumb, { type BreadcrumbItem } from "@/components/ui/breadcrumb";
 
-import { ProductCreateForm } from "./ProductCreateForm";
+import { ProductCreateForm } from "./CreateForm"
 
 export default function ProductsList() {
     
