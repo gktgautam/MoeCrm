@@ -1,7 +1,9 @@
 import PermissionGate from "@/core/rbac/PermissionGate";
 // import Breadcrumb, { type BreadcrumbItem } from "@/components/ui/breadcrumb";
 
-import { ProductCreateForm } from "./CreateForm"; 
+import { ProductCreateDialog } from "./ProductCreateDialog";
+
+import { useState } from "react";
 
 export default function ProductsList() {
     
@@ -9,6 +11,8 @@ export default function ProductsList() {
   //   { label: "Home", path: "/" }, 
   //   { label: "Product" } // last item has no link
   // ];
+
+const [open, setOpen] =  useState(false);
 
 
     const handleCreate = async (payload: any) => {
@@ -29,11 +33,15 @@ export default function ProductsList() {
       <div className="flex justify-between items-center">
          <div className="text-lg font-semibold">Product Management</div>
          <PermissionGate allow={["products:write"]} mode="all">
-            <button className="rounded bg-gray-900 px-3 py-2 text-sm text-white">Create segment</button>
+            <button className="rounded bg-gray-900 px-3 py-2 text-sm text-white" onClick={() => setOpen(true)}>Create segment</button>
          </PermissionGate>
        </div>
 
-       <ProductCreateForm onSubmit={handleCreate} />
+       <ProductCreateDialog
+        open={open}
+        onOpenChange={setOpen}
+        onSubmit={handleCreate}
+      />
 
        
 
