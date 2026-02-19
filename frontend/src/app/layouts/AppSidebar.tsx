@@ -79,17 +79,17 @@ export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
   return (
     <Sidebar collapsible="icon">
        
-        <SidebarHeader className=" border-b items-start pb-4">
+        <SidebarHeader className=" border-b items-center pb-4">
           <img src="/images/equentis_logo.svg" alt="Logo" className="h-8 w-auto" />
           { !isCollapsed &&  
-             <p className="text-xs text-nowrap">Marketing Platform</p> 
+             <p className="text-xs text-nowrap text-gray-500">Marketing Platform</p> 
           }
         </SidebarHeader>
 
 
       <SidebarContent className="mt-10">
         <SidebarGroup>
-          <SidebarMenu>
+          <SidebarMenu className="gap-4">
             {nav.map((item) => {
               if (item.children?.length) {
                 const parentActive = item.children.some((c) =>
