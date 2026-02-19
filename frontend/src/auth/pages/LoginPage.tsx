@@ -1,151 +1,142 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth";
-import {
-  getApiErrorMessage,
-  getApiErrorCode,
-  getApiRequestId, 
-} from "@/core/http/api-error";
+import { getApiErrorMessage, getApiErrorCode, getApiRequestId } from "@/core/http/api-error";
 
-import { Eye, EyeOff } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Icons } from "@/components/icons";
+
+// -----------------------------
+// Validation Schema
+// -----------------------------
+const LoginSchema = z.object({
+  email: z.string().email({ message: "Enter a valid email" }),
+  password: z.string().min(1, "Password is required"),
+});
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const emailError = useMemo(() => {
-    if (!email) return "";
-    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-    return ok ? "" : "Enter a valid email";
-  }, [email]);
+  const form = useForm<z.infer<typeof LoginSchema>>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     setErr(null);
-    setLoading(true);
+    form.clearErrors();
+    form.setValue("email", values.email.trim().toLowerCase());
 
     try {
-      const safeEmail = email.trim().toLowerCase();
-      await login({ email: safeEmail, password });
+      await login(values);
       navigate("/", { replace: true });
     } catch (error: unknown) {
       const msg = getApiErrorMessage(error);
       const code = getApiErrorCode(error);
       const rid = getApiRequestId(error);
-
       setErr(rid ? `${msg} (${code ?? "ERROR"}) [${rid}]` : msg);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <div className="p-10 md:min-w-100 min-w-full rounded-2xl">
-      <div className="p-6 sm:p-8 bg-white rounded-2xl border border-gray-200 shadow-[0_12px_30px_rgba(0,0,0,0.06)]">
-        <div className="flex flex-col gap-4">
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold">Welcome back</h1>
-            <p>Sign in to continue to your dashboard.</p>
-          </div>
-
-          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
-            {/* EMAIL */}
-            <div className="flex flex-col gap-1">
-              <label className="font-medium text-sm">Email</label>
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                placeholder="you@company.com"
-                onChange={(e) => setEmail(e.target.value)}
-                className={`
-                  w-full px-3 py-2 border rounded-lg outline-none
-                  focus:ring-2 focus:ring-blue-500
-                  ${emailError ? "border-red-500" : "border-gray-300"}
-                `}
-              />
-              <span className="text-xs text-red-500 min-h-[1rem]">
-                {emailError || " "}
-              </span>
+    <div className="p-10 md:min-w-100 min-w-full rounded-2xl flex justify-center">
+      <Card className="w-full max-w-md border border-gray-200 shadow-xl rounded-2xl">
+        <CardContent className="p-8">
+          <div className="flex flex-col gap-4">
+            <div className="mb-8">
+              <h1 className="text-2xl font-semibold">Welcome back</h1>
+              <p className="text-sm text-muted-foreground">Sign in to continue to your dashboard.</p>
             </div>
 
-            {/* PASSWORD */}
-            <div className="flex flex-col gap-1">
-              <label className="font-medium text-sm">Password</label>
-
-              <div className="relative">
-                <input
-                  type={showPass ? "text" : "password"}
-                  value={password}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="
-                    w-full px-3 py-2 border border-gray-300 rounded-lg outline-none
-                    focus:ring-2 focus:ring-blue-500
-                  "
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Email ------------------------------------------ */}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  placeholder="you@company.com"
+                  {...form.register("email")}
                 />
+                {form.formState.errors.email && (
+                  <p className="text-xs text-red-500">{form.formState.errors.email.message}</p>
+                )}
+              </div>
 
+              {/* Password -------------------------------------- */}
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPass ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...form.register("password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass((s) => !s)}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                  >
+                    {showPass ? <Icons.eyeOff className="h-4 w-4" /> : <Icons.eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {form.formState.errors.password && (
+                  <p className="text-xs text-red-500">{form.formState.errors.password.message}</p>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Use your work account</span>
                 <button
                   type="button"
-                  onClick={() => setShowPass((s) => !s)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="underline hover:text-primary"
                 >
-                  {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                  Forgot password?
                 </button>
               </div>
-            </div>
 
-            {/* FOOTER INFO */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Use your work account</span>
-
-              <button
-                type="button"
-                className="text-blue-600 hover:underline text-sm"
-                onClick={() => {
-                  // navigate("/forgot-password")
-                }}
+              <Button
+                type="submit"
+                className="w-full font-bold"
+                disabled={form.formState.isSubmitting}
               >
-                Forgot password?
-              </button>
-            </div>
+                {form.formState.isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <Icons.spinner className="h-4 w-4 animate-spin" />
+                    Signing in...
+                  </div>
+                ) : (
+                  "Sign in"
+                )}
+              </Button>
 
-            {/* SUBMIT BUTTON */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="
-                w-full py-3 rounded-lg bg-blue-600 text-white font-semibold
-                hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2
-              "
-            >
-              {loading && (
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              )}
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
+              <p className="text-center text-xs text-muted-foreground">
+                By continuing, you agree to the Terms & Privacy Policy.
+              </p>
+            </form>
 
-            <p className="text-center text-xs text-gray-500">
-              By continuing, you agree to the Terms & Privacy Policy.
-            </p>
-          </form>
-
-          {/* ERROR ALERT */}
-          {err && (
-            <div className="border border-red-300 text-red-700 bg-red-50 px-4 py-3 rounded-lg text-sm">
-              {err}
-            </div>
-          )}
-        </div>
-      </div>
+            {err && (
+              <Alert variant="destructive">
+                <AlertDescription>{err}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

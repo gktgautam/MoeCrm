@@ -6,11 +6,13 @@ import { Settings } from "lucide-react";
 
 export const SETTINGS_ROUTES: AppRoute[] = [
   {
-    path: "/settings",
-    navLabel: "Settings",
-    anyOf: ["settings:read"],
-    element: <SettingsHome />,
+    navLabel: "Settings",     // ← label only
     icon: Settings,
+
+    path: null,               // ← NO ROUTE
+    element: null,            // ← NO PAGE
+    anyOf: [],                // ← optional
+
     children: [
       {
         path: "/settings/users",
@@ -23,8 +25,7 @@ export const SETTINGS_ROUTES: AppRoute[] = [
         navLabel: "Roles",
         anyOf: ["roles:read"],
         element: <RolesSettingsPage />,
-      } 
-    ],
-  },
-
+      }
+    ]
+  }
 ];

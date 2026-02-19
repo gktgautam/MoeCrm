@@ -1,0 +1,159 @@
+import { useMemo } from "react"
+import { NavLink, useLocation, matchPath } from "react-router-dom"
+import { ChevronDown } from "lucide-react"
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarHeader,
+} from "@/components/ui/sidebar"
+
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+
+import { cn } from "@/lib/utils"
+import { NAV, type NavItem } from "@/app/layouts/navigation"
+
+function normalizePath(p: string) {
+  // normalize trailing slashes except for root
+  return p.length > 1 ? p.replace(/\/+$/, "") : p
+}
+
+function isActivePath(pathname: string, to: string) {
+  const pn = normalizePath(pathname)
+  const target = normalizePath(to)
+
+  if (target === "/") return pn === "/"
+  return matchPath({ path: target, end: false }, pn) != null
+}
+
+export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
+  const { pathname } = useLocation()
+
+  // type-guard to remove null values safely
+  const isNavItem = (x: NavItem | null): x is NavItem => x !== null
+
+  // Keep item if:
+  // - its own route is allowed OR
+  // - it has any allowed descendants
+  const filterNav = (items: NavItem[]): NavItem[] =>
+    items
+      .map((item): NavItem | null => {
+        const filteredChildren = item.children ? filterNav(item.children) : undefined
+
+        const isAllowedSelf = allowedRoutes.includes(item.to)
+        const hasAllowedChildren = !!filteredChildren?.length
+
+        if (!isAllowedSelf && !hasAllowedChildren) return null
+
+        return {
+          ...item,
+          children: hasAllowedChildren ? filteredChildren : undefined,
+        }
+      })
+      .filter(isNavItem)
+
+  const nav = useMemo(() => filterNav(NAV), [allowedRoutes])
+
+  return (
+    <Sidebar>
+      <SidebarHeader>
+        <img src="/images/equentis_logo.svg" alt="Logo" className="h-8 w-auto" />
+      </SidebarHeader>
+
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            {nav.map((item) => {
+              if (item.children?.length) {
+                const parentActive = item.children.some((c) =>
+                  isActivePath(pathname, c.to)
+                )
+
+                return (
+                  <Collapsible key={item.label} defaultOpen={parentActive}>
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          className={cn(
+                            "flex items-center justify-between w-full",
+                            parentActive && "bg-accent text-accent-foreground font-medium"
+                          )}
+                        >
+                          <div className="flex items-center">
+                            {item.icon && <item.icon className="mr-2 h-4 w-4" />}
+                            {item.label}
+                          </div>
+                          <ChevronDown className="ml-auto transition-transform data-[state=open]:rotate-180" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+
+                      <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up overflow-hidden">
+                        <div className="pt-1">
+                          <SidebarMenuSub>
+                            {item.children.map((child) => {
+                              const childActive = isActivePath(pathname, child.to)
+
+                              return (
+                                <SidebarMenuSubItem key={child.label}>
+                                  <SidebarMenuButton asChild>
+                                    <NavLink
+                                      to={child.to}
+                                      // IMPORTANT: use our own matcher so it matches parentActive logic
+                                      className={() =>
+                                        cn(
+                                          "w-full",
+                                          childActive &&
+                                            "bg-accent text-accent-foreground font-medium"
+                                        )
+                                      }
+                                      end={false}
+                                    >
+                                      {child.label}
+                                    </NavLink>
+                                  </SidebarMenuButton>
+                                </SidebarMenuSubItem>
+                              )
+                            })}
+                          </SidebarMenuSub>
+                        </div>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                )
+              }
+
+              const linkActive = isActivePath(pathname, item.to)
+
+              return (
+                <SidebarMenuItem key={item.label}>
+                  <SidebarMenuButton
+                    asChild
+                    className={cn(
+                      linkActive && "bg-accent text-accent-foreground font-medium"
+                    )}
+                  >
+                    <NavLink to={item.to} end={normalizePath(item.to) === "/"}>
+                      {item.icon && <item.icon className="mr-2 h-4 w-4" />}
+                      {item.label}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  )
+}

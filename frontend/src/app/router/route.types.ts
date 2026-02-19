@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"; ; 
 
 export type AppRoute = {
-  path: string;
+  path: string | null;
   element: ReactNode;
   navLabel?: string;
   anyOf?: string[];
