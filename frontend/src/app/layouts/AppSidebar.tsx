@@ -12,6 +12,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarHeader,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 import {
@@ -19,6 +20,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+ 
+
 
 import { cn } from "@/lib/utils"
 import { NAV, type NavItem } from "@/app/layouts/navigation"
@@ -38,6 +41,15 @@ function isActivePath(pathname: string, to: string) {
 
 export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
   const { pathname } = useLocation()
+
+  
+  const {
+    state, 
+    setOpen,   
+  } = useSidebar()
+
+
+  const isCollapsed = state === "collapsed"
 
   // type-guard to remove null values safely
   const isNavItem = (x: NavItem | null): x is NavItem => x !== null
@@ -65,13 +77,17 @@ export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
   const nav = useMemo(() => filterNav(NAV), [allowedRoutes])
 
   return (
-    <Sidebar>
-        <SidebarHeader>
+    <Sidebar collapsible="icon">
+       
+        <SidebarHeader className=" border-b items-start pb-4">
           <img src="/images/equentis_logo.svg" alt="Logo" className="h-8 w-auto" />
+          { !isCollapsed &&  
+             <p className="text-xs text-nowrap">Marketing Platform</p> 
+          }
         </SidebarHeader>
 
 
-      <SidebarContent>
+      <SidebarContent className="mt-10">
         <SidebarGroup>
           <SidebarMenu>
             {nav.map((item) => {
@@ -80,11 +96,17 @@ export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
                   isActivePath(pathname, c.to)
                 )
 
+              
+
                 return (
                   <Collapsible key={item.label} defaultOpen={parentActive}>
                     <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton className={cn(parentActive && "bg-accent text-accent-foreground font-medium")} > 
+                      <CollapsibleTrigger asChild 
+                       onClick={() => {
+                           setOpen(true)
+                        }}
+                        >
+                        <SidebarMenuButton className={cn(parentActive && "bg-accent text-accent-foreground font-medium")} tooltip={item.label}> 
                             {item.icon && <item.icon className="mr-2 h-4 w-4" />}
                             {item.label}  
                           <ChevronDown className="ml-auto transition-transform data-[state=open]:rotate-180" />
@@ -119,7 +141,7 @@ export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
 
               return (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton
+                  <SidebarMenuButton tooltip={item.label}
                     asChild
                     className={cn(
                       linkActive && "bg-accent text-accent-foreground font-medium"
