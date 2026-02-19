@@ -66,9 +66,9 @@ export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
 
   return (
     <Sidebar>
-      <SidebarHeader>
-        <img src="/images/equentis_logo.svg" alt="Logo" className="h-8 w-auto" />
-      </SidebarHeader>
+        <SidebarHeader>
+          <img src="/images/equentis_logo.svg" alt="Logo" className="h-8 w-auto" />
+        </SidebarHeader>
 
 
       <SidebarContent>
@@ -84,22 +84,15 @@ export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
                   <Collapsible key={item.label} defaultOpen={parentActive}>
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
-                        <SidebarMenuButton
-                          className={cn(
-                            "flex items-center justify-between w-full",
-                            parentActive && "bg-accent text-accent-foreground font-medium"
-                          )}
-                        >
-                          <div className="flex items-center">
+                        <SidebarMenuButton className={cn(parentActive && "bg-accent text-accent-foreground font-medium")} > 
                             {item.icon && <item.icon className="mr-2 h-4 w-4" />}
-                            {item.label}
-                          </div>
+                            {item.label}  
                           <ChevronDown className="ml-auto transition-transform data-[state=open]:rotate-180" />
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
 
                       <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up overflow-hidden">
-                        <div className="pt-1">
+                        <div className="p-1">
                           <SidebarMenuSub>
                             {item.children.map((child) => {
                               const childActive = isActivePath(pathname, child.to)
@@ -107,18 +100,7 @@ export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
                               return (
                                 <SidebarMenuSubItem key={child.label}>
                                   <SidebarMenuButton asChild>
-                                    <NavLink
-                                      to={child.to}
-                                      // IMPORTANT: use our own matcher so it matches parentActive logic
-                                      className={() =>
-                                        cn(
-                                          "w-full",
-                                          childActive &&
-                                            "bg-accent text-accent-foreground font-medium"
-                                        )
-                                      }
-                                      end={false}
-                                    >
+                                    <NavLink to={child.to}  className={cn(childActive && "bg-accent text-accent-foreground font-medium")} end={false} >
                                       {child.label}
                                     </NavLink>
                                   </SidebarMenuButton>
