@@ -116,7 +116,7 @@ export function ProductForm({ onSubmit, onCancel }: ProductFormProps) {
     <form onSubmit={form.handleSubmit(onValid)} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="name">Product Name</Label>
-        <Input id="name" placeholder="Acme Pro" {...form.register("name")} />
+        <Input id="name" placeholder="e.g., SaaS Platform" {...form.register("name")} />
         {form.formState.errors.name && <p className="text-xs text-red-500">{form.formState.errors.name.message}</p>}
       </div>
 
