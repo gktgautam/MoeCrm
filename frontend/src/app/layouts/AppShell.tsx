@@ -40,7 +40,7 @@ export default function AppShell() {
             </div>
           </header>
 
-          <main className="p-4 flex-1 overflow-auto">
+          <main className="p-4 flex-1 overflow-auto bg-body">
             <Outlet />
           </main>
         </div>
