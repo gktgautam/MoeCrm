@@ -13,7 +13,7 @@ export default function CreateProductPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-card shadow-2xl p-5 rounded-2xl">
       <div className="text-lg font-semibold">Create Product</div>
       <ProductForm onSubmit={handleCreate} onCancel={() => navigate("/products")} />
     </div>

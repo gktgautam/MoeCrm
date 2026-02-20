@@ -126,7 +126,7 @@ export default function SafeEditor({
             },
           },
 
-          setup: (editor) => {
+          setup: (editor:any) => {
             // Register menu items for each merge tag
             mergeTags.forEach((tag, i) => {
               editor.ui.registry.addMenuItem(menuItemIds[i], {
@@ -139,7 +139,7 @@ export default function SafeEditor({
             editor.ui.registry.addMenuButton("mergeTagsButton", {
               text: "Merge Tags",
               tooltip: "Insert Merge Tag",
-              fetch: (callback) => {
+              fetch: (callback:any) => {
                 callback(
                   mergeTags.map((tag) => ({
                     type: "menuitem",
