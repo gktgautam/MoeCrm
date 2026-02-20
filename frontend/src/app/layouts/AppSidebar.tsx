@@ -101,12 +101,8 @@ export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
                 return (
                   <Collapsible key={item.label} defaultOpen={parentActive}>
                     <SidebarMenuItem>
-                      <CollapsibleTrigger asChild 
-                       onClick={() => {
-                           setOpen(true)
-                        }}
-                        >
-                        <SidebarMenuButton className={cn(parentActive && "bg-accent text-accent-foreground font-medium")} tooltip={item.label}> 
+                      <CollapsibleTrigger asChild onClick={() => { setOpen(true) }}>
+                        <SidebarMenuButton className={cn(parentActive && "bg-background text-accent-foreground font-medium")} tooltip={item.label}> 
                             {item.icon && <item.icon className="mr-2 h-4 w-4" />}
                             {item.label}  
                           <ChevronDown className="ml-auto transition-transform data-[state=open]:rotate-180" />
@@ -136,15 +132,13 @@ export function AppSidebar({ allowedRoutes }: { allowedRoutes: string[] }) {
                   </Collapsible>
                 )
               }
-
+  
               const linkActive = isActivePath(pathname, item.to)
 
               return (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton tooltip={item.label}
-                    asChild
-                    className={cn(
-                      linkActive && "bg-accent text-accent-foreground font-medium"
+                  <SidebarMenuButton tooltip={item.label} asChild className={cn(
+                      linkActive && "bg-primary text-primary-foreground font-medium hover:bg-primary/90! hover:text-primary-foreground!"  
                     )}
                   >
                     <NavLink to={item.to} end={normalizePath(item.to) === "/"}>
