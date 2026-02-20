@@ -1,2 +1,2 @@
 export { PRODUCTS_ROUTES } from "./products.routes";
-export { default as ProductsList } from "./pages/ProductsList";
+export { default as ProductsListPage } from "./pages/ProductsListPage";

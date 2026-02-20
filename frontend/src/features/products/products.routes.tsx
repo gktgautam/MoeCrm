@@ -1,4 +1,4 @@
-import ProductsList from "@/features/products/pages/ProductsList";
+import ProductsListPage from "@/features/products/pages/ProductsListPage";
 import type { AppRoute } from "@/app/router";
 import { Package } from "lucide-react";
 
@@ -7,7 +7,7 @@ export const PRODUCTS_ROUTES: AppRoute[] = [
     path: "/products",
     navLabel: "Products",
     anyOf: ["products:read"],
-    element: <ProductsList />,
-    icon: Package
+    element: <ProductsListPage />,
+    icon: Package,
   },
 ];
