@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import SafeEditor from "@/components/SafeEditor";
 import type { ProductCreateInput } from "../products.types";
 
 const brandingSchema = z.object({
@@ -43,6 +44,16 @@ type ProductFormProps = {
   onSubmit: (data: ProductCreateInput) => Promise<void> | void;
   onCancel: () => void;
 };
+
+const emailMergeTags = [
+  { label: "Brand: Display Name", token: "{{display_name}}" },
+  { label: "Brand: Website URL", token: "{{website_url}}" },
+  { label: "Brand: Logo URL", token: "{{logo_url}}" },
+  { label: "Brand: Brand Color", token: "{{brand_color}}" },
+  { label: "Brand: Support Email", token: "{{support_email}}" },
+  { label: "Brand: Address", token: "{{address_text}}" },
+  { label: "Brand: Unsubscribe URL", token: "{{unsubscribe_url}}" },
+];
 
 export function ProductForm({ onSubmit, onCancel }: ProductFormProps) {
   const [openBranding, setOpenBranding] = useState(false);
@@ -112,6 +123,16 @@ export function ProductForm({ onSubmit, onCancel }: ProductFormProps) {
     onCancel();
   };
 
+  const previewData = {
+    display_name: form.watch("branding.displayName") || form.watch("name") || "Your Company",
+    support_email: form.watch("branding.supportEmail") || "support@example.com",
+    website_url: form.watch("branding.websiteUrl") || "https://example.com",
+    logo_url: form.watch("branding.logoUrl") || "https://example.com/logo.png",
+    brand_color: form.watch("branding.brandColor") || "#0f172a",
+    address_text: form.watch("branding.addressText") || "22 Main Street, San Francisco, CA",
+    unsubscribe_url: form.watch("branding.unsubscribeUrl") || "https://example.com/unsubscribe",
+  };
+
   return (
     <form onSubmit={form.handleSubmit(onValid)} className="space-y-6 mt-5">
       <div className="grid grid-cols-2 gap-5">
@@ -153,12 +174,42 @@ export function ProductForm({ onSubmit, onCancel }: ProductFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="emailHeaderHtml">Email Header HTML</Label>
-        <Textarea id="emailHeaderHtml" placeholder="<div> HTML for email header (logo, banner, branding)...</div>" {...form.register("emailHeaderHtml")} className="bg-input-background min-h-[80px] font-mono"/>
+        <p className="text-xs text-muted-foreground">
+          Used only for your product email header. Use Branding tags below to keep templates dynamic.
+        </p>
+        <SafeEditor
+          value={form.watch("emailHeaderHtml") ?? ""}
+          onChange={(html) => {
+            form.setValue("emailHeaderHtml", html, {
+              shouldDirty: true,
+              shouldTouch: true,
+              shouldValidate: true,
+            });
+          }}
+          minHeight={340}
+          mergeTags={emailMergeTags}
+          previewData={previewData}
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="emailFooterHtml">Email Footer HTML</Label>
-        <Textarea id="emailFooterHtml" placeholder="<div> HTML for email footer (copyright, unsubscribe, social links)...</div>" {...form.register("emailFooterHtml")} className="bg-input-background min-h-[80px] font-mono"/>
+        <p className="text-xs text-muted-foreground">
+          Used only for your product email footer. Typical fields: display name, support email, unsubscribe URL.
+        </p>
+        <SafeEditor
+          value={form.watch("emailFooterHtml") ?? ""}
+          onChange={(html) => {
+            form.setValue("emailFooterHtml", html, {
+              shouldDirty: true,
+              shouldTouch: true,
+              shouldValidate: true,
+            });
+          }}
+          minHeight={280}
+          mergeTags={emailMergeTags}
+          previewData={previewData}
+        />
       </div>
 
       <Separator />
