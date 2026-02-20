@@ -4,7 +4,7 @@ export type NavItem = {
   label: string;
   to: string;
   children?: NavItem[];
-  icon:any
+  icon?: AppRoute["icon"];
 };
 
   
@@ -14,8 +14,8 @@ function buildNav(routes: AppRoute[]): NavItem[] {
     .map((route) => {
       const item: NavItem = {
         label: route.navLabel!, // safe because filtered above
-        to: route.path,
-        icon:route.icon
+        to: route.path ?? route.children?.[0]?.path ?? "#",
+        icon: route.icon,
       };
 
       if (route.children && route.children.length > 0) {

@@ -1,4 +1,5 @@
 import ProductsListPage from "@/features/products/pages/ProductsListPage";
+import CreateProductPage from "@/features/products/pages/CreateProductPage";
 import type { AppRoute } from "@/app/router";
 import { Package } from "lucide-react";
 
@@ -9,5 +10,10 @@ export const PRODUCTS_ROUTES: AppRoute[] = [
     anyOf: ["products:read"],
     element: <ProductsListPage />,
     icon: Package,
+  },
+  {
+    path: "/products/create",
+    anyOf: ["products:write"],
+    element: <CreateProductPage />,
   },
 ];

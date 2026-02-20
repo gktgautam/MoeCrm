@@ -11,6 +11,10 @@ const defineFeatureRoutes = (routes: AppRoute[]) => {
   const seenPath = new Set<string>();
 
   for (const route of routes) {
+    if (!route.path) {
+      continue;
+    }
+
     if (seenPath.has(route.path)) {
       throw new Error(`Duplicate frontend route path: ${route.path}`);
     }

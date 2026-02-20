@@ -13,13 +13,10 @@ import RouteError from "@/app/pages/RouteError";
 
 function mapAppRoutes(routes: AppRoute[]): RouteObject[] {
   return routes.map((route) => ({
-    path: route.path,
+    path: route.path ?? undefined,
     element: <RouteGuard anyOf={route.anyOf} allOf={route.allOf} />,
     children: [
-      // main page for this path
-      { index: true, element: route.element },
-
-      // nested children (IMPORTANT)
+      ...(route.element != null ? [{ index: true, element: route.element }] : []),
       ...(route.children ? mapAppRoutes(route.children) : []),
     ],
   }));

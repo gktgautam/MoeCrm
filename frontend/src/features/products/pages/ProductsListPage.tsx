@@ -1,29 +1,18 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PermissionGate from "@/core/rbac/PermissionGate";
 import { Button } from "@/components/ui/button";
-import {
-  useCreateProductMutation,
-  useProductsListQuery,
-} from "../products.queries";
-import { ProductCreateDialog } from "../components/ProductCreateDialog";
-import type { ProductCreateInput } from "../products.types";
+import { useProductsListQuery } from "../products.queries";
 
 export default function ProductsListPage() {
-  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const productsQuery = useProductsListQuery();
-  const createMutation = useCreateProductMutation();
-
-  const handleCreate = async (payload: ProductCreateInput) => {
-    await createMutation.mutateAsync(payload);
-    setOpen(false);
-  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="text-lg font-semibold">Product Management</div>
         <PermissionGate allow={["products:write"]} mode="all">
-          <Button onClick={() => setOpen(true)}>Create product</Button>
+          <Button onClick={() => navigate("/products/create")}>Create product</Button>
         </PermissionGate>
       </div>
 
@@ -49,7 +38,6 @@ export default function ProductsListPage() {
         </div>
       )}
 
-      <ProductCreateDialog open={open} onOpenChange={setOpen} onSubmit={handleCreate} />
     </div>
   );
 }

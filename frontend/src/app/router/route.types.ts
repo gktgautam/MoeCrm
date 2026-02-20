@@ -1,11 +1,12 @@
-import type { ReactNode } from "react"; ; 
+import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 
 export type AppRoute = {
-  path: string | null;
-  element: ReactNode;
+  path?: string;
+  element?: ReactNode;
   navLabel?: string;
   anyOf?: string[];
   allOf?: string[];
-  children?:any,
-  icon:any
+  children?: AppRoute[];
+  icon?: LucideIcon;
 };
