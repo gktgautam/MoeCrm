@@ -20,7 +20,7 @@ export function ProductCreateDialog({ open, onOpenChange, onSubmit }: ProductCre
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Create Product</DialogTitle>
-          <DialogDescription>Fill in the details below to create a new product.</DialogDescription>
+          <DialogDescription className="text-muted-foreground">Add a new product with custom header/footer snippets and default sender.</DialogDescription>
         </DialogHeader>
 
         <div className="no-scrollbar -mx-4 max-h-[50vh] overflow-y-auto px-4">

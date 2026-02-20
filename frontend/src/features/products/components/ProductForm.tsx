@@ -113,25 +113,16 @@ export function ProductForm({ onSubmit, onCancel }: ProductFormProps) {
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onValid)} className="space-y-6">
-      <div className="space-y-2">
+    <form onSubmit={form.handleSubmit(onValid)} className="space-y-6 mt-5">
+      <div className="grid grid-cols-2 gap-5">
+        <div className="space-y-2">
         <Label htmlFor="name">Product Name</Label>
-        <Input id="name" placeholder="e.g., SaaS Platform" {...form.register("name")} />
+        <Input id="name" placeholder="e.g., SaaS Platform" {...form.register("name")} className="bg-input-background" />
         {form.formState.errors.name && <p className="text-xs text-red-500">{form.formState.errors.name.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea id="description" className="min-h-[80px]" placeholder="What does this product do?" {...form.register("description")} />
-        {form.formState.errors.description && (
-          <p className="text-xs text-red-500">{form.formState.errors.description.message}</p>
-        )}
-      </div>
-
-      <Separator />
-
-      <div className="space-y-2">
-        <Label htmlFor="defaultEmailSenderId">Default Email Sender ID</Label>
+        <Label htmlFor="defaultEmailSenderId">Default Sender ID</Label>
         <Input
           id="defaultEmailSenderId"
           type="number"
@@ -140,17 +131,34 @@ export function ProductForm({ onSubmit, onCancel }: ProductFormProps) {
           {...form.register("defaultEmailSenderId", {
             setValueAs: (value: string) => (value === "" ? null : Number(value)),
           })}
+          className="bg-input-background"
         />
       </div>
 
+      </div>
+
+      
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea id="description" placeholder="What does this product do?" {...form.register("description")} className="bg-input-background min-h-[80px]"/>
+        {form.formState.errors.description && (
+          <p className="text-xs text-red-500">{form.formState.errors.description.message}</p>
+        )}
+      </div>
+
+      <Separator />
+
+      
+
       <div className="space-y-2">
         <Label htmlFor="emailHeaderHtml">Email Header HTML</Label>
-        <Textarea id="emailHeaderHtml" className="min-h-[80px] font-mono" placeholder="<div>...</div>" {...form.register("emailHeaderHtml")} />
+        <Textarea id="emailHeaderHtml" placeholder="<div> HTML for email header (logo, banner, branding)...</div>" {...form.register("emailHeaderHtml")} className="bg-input-background min-h-[80px] font-mono"/>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="emailFooterHtml">Email Footer HTML</Label>
-        <Textarea id="emailFooterHtml" className="min-h-[80px] font-mono" placeholder="<div>...</div>" {...form.register("emailFooterHtml")} />
+        <Textarea id="emailFooterHtml" placeholder="<div> HTML for email footer (copyright, unsubscribe, social links)...</div>" {...form.register("emailFooterHtml")} className="bg-input-background min-h-[80px] font-mono"/>
       </div>
 
       <Separator />
@@ -183,9 +191,9 @@ export function ProductForm({ onSubmit, onCancel }: ProductFormProps) {
               <div className="space-y-2" key={field}>
                 <Label htmlFor={field}>{label}</Label>
                 {isAddress ? (
-                  <Textarea id={field} className="min-h-[80px]" {...form.register(`branding.${field}`)} />
+                  <Textarea id={field} className="bg-input-background min-h-[80px]" {...form.register(`branding.${field}`)} />
                 ) : (
-                  <Input id={field} {...form.register(`branding.${field}`)} />
+                  <Input id={field} {...form.register(`branding.${field}`)} className="bg-input-background"/>
                 )}
               </div>
             );
